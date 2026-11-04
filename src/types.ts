@@ -1,0 +1,40 @@
+export type Coordinates = [number, number];
+export type Category = 'Museums' | 'Libraries' | 'Engineering' | 'Observatories' | 'Computing' | 'Science';
+export type Source = {
+  commentId: number;
+  storyId: number;
+  url: string;
+  discussionUrl: string;
+  author: string;
+  date: string;
+  quote: string | null;
+};
+export type Place = {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  category: Category;
+  coordinates: Coordinates;
+  coordinateSource: string;
+  description: string;
+  reason: string;
+  visitNote: string;
+  tags: string[];
+  officialUrl: string;
+  officialCheckedAt: string;
+  source: Source;
+  sources?: Source[];
+  review: { status: string; reviewedAt: string; method: string };
+  image: null | {
+    path: string;
+    alt: string;
+    author: string;
+    license: string;
+    licenseUrl: string;
+    sourceUrl: string;
+    modifications: string;
+  };
+};
+export type Bounds = { north: number; south: number; west: number; east: number };
+export type FilterOptions = { query?: string; category?: string; region?: string; saved?: Set<string> | null; origin?: Coordinates | null; radius?: number; bounds?: Bounds | null; sort?: string };

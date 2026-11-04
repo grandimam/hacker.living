@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+.openai/*.tar.gz
+.openai/*.tgz
+data/runs/
+data/reviews/
+data/drafts/
+data/*.tmp
+*.log
