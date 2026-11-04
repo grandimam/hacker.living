@@ -1,6 +1,6 @@
 # hacker.living
 
-A curious life, well discovered. The first collection is **Places**: real recommendations from Hacker News, with the original comment, recommendation context, and a dated official link. The homepage also introduces Playgrounds and Fonts as upcoming collections.
+Your next good detour. The first collection is **Places**: real recommendations from Hacker News, with the original comment, recommendation context, and a dated official link. The homepage opens directly into Places. Playgrounds and Fonts remain quiet coming-next links in the navigation.
 
 ## Run locally
 
@@ -19,13 +19,13 @@ All application styling uses Tailwind utility classes. `src/index.css` contains 
 
 ## Implemented experience
 
-- Editorial homepage matching the approved hacker.living direction.
+- Places-first homepage matching the approved redesign: compact location search, larger editorial recommendation rows, source excerpts, and a synchronized map.
 - Places map with synchronized recommendations, category and city filters, full-text search, sorting, map-area search, and a list view.
 - “Near me” asks for permission on click and computes distances locally, within 100 km. The initial coverage is primarily London; empty nearby results explicitly explain that coverage.
-- Detail panels with real HN comments, short attributed excerpts, editorial paraphrases, original discussions, official links, and verification dates.
+- Compact place cards prioritize official visitor information and the original HN discussion. Full recommendation context is available in an expandable section; short attributed excerpts are visible in the list.
 - Stable deep links such as `/places/crossness`; static index files are generated for all published places.
 - Saved places in browser local storage, with corrupted-storage recovery and cross-tab synchronization.
-- Responsive layout, keyboard focus styles, Escape to close details, reduced-motion support, loading and empty states.
+- Responsive layout: desktop opens with the London map and a featured Crossness card; mobile starts with useful place recommendations and a map toggle. Keyboard focus styles, Escape to close details, reduced-motion support, loading and empty states are included.
 - Self-hosted, licensed Commons photography with source and license links on `/credits`.
 
 The initial collection has ten reviewed places. Building-level coordinates are not verified accessible entrances. Link checks establish that the official URL returned a page on the given date; they do not establish current opening hours or admission conditions.

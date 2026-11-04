@@ -4,7 +4,7 @@ import type { Bounds, Coordinates, Place } from '../types';
 import { cn } from '../lib';
 
 export type MapHandle = { fit: (places: Place[]) => void; bounds: () => Bounds | null; center: (coordinates: Coordinates, zoom?: number) => void };
-type Props = { places: Place[]; selected?: string; onSelect: (id: string) => void; preview?: boolean; fitKey?: string; className?: string };
+type Props = { places: Place[]; selected?: string; onSelect: (id: string) => void; preview?: boolean; focusSelection?: boolean; fitKey?: string; className?: string };
 const markerPaths = {
   Museums: '<path d="m3 8 9-5 9 5H3Zm2 3v7m5-7v7m4-7v7m5-7v7M3 21h18M3 18h18"/>',
   Libraries: '<path d="M12 6v15M3 4c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2Z"/>',
@@ -14,7 +14,7 @@ const markerPaths = {
   Science: '<path d="M9 3h6m-5 0v7L4 20h16l-6-10V3M7 15h10"/>',
 };
 
-export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places,selected,onSelect,preview=false,fitKey='',className}, ref) {
+export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places,selected,onSelect,preview=false,focusSelection=true,fitKey='',className}, ref) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.LayerGroup | null>(null);
@@ -50,9 +50,9 @@ export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places
   },[places,selected,preview]);
   useEffect(()=>{if(!preview)fit(places);},[fitKey,preview]);
   useEffect(()=>{
-    const p=places.find(p=>p.id===selected);if(!p||!map.current||preview)return;
+    const p=places.find(p=>p.id===selected);if(!p||!map.current||preview||!focusSelection)return;
     map.current.setView(p.coordinates,Math.max(12,map.current.getZoom()),{animate:false});
     if(window.innerWidth>900)map.current.panBy([140,0],{animate:false});
-  },[selected,places,preview]);
+  },[selected,places,preview,focusSelection]);
   return <div className={cn('relative size-full min-h-0',className)}><div ref={container} role="region" aria-label={preview?'Map preview of recommended places in London':'Interactive map of recommended places'} className="isolate z-0 size-full bg-[#e6e8dd] [&_.leaflet-tile-pane]:saturate-[.35] [&_.leaflet-tile-pane]:brightness-[1.035] [&_.leaflet-tile-pane]:contrast-[.93] [&_.leaflet-control-attribution]:bg-paper/90! [&_.leaflet-control-attribution]:text-[8px]! [&_.leaflet-control-zoom]:mb-8! [&_.leaflet-control-zoom]:mr-3! [&_.leaflet-control-zoom_a]:bg-paper! [&_.leaflet-control-zoom_a]:text-ink! [&_.leaflet-tooltip]:font-sans [&_.leaflet-tooltip]:text-xs"/>{tileError&&<p role="status" className="absolute bottom-12 left-3 right-3 z-[500] rounded border border-rule bg-paper p-3 text-[10px] shadow">Map tiles are unavailable. All places and sources are still available in the list.</p>}</div>;
 });
