@@ -1,4 +1,4 @@
-import type { Coordinates, FilterOptions, Place } from './types.ts';
+import type { Coordinates, FilterOptions, DisplayPlace } from './types.ts';
 
 export function distanceKm(a: Coordinates, b: Coordinates): number {
   const rad = (x: number) => x * Math.PI / 180;
@@ -8,7 +8,7 @@ export function distanceKm(a: Coordinates, b: Coordinates): number {
   return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)));
 }
 
-export function filterPlaces(places: Place[], { query = '', category = 'all', region = 'all', saved = null, origin = null, radius = 100, bounds = null, sort = 'curated' }: FilterOptions = {}): Place[] {
+export function filterPlaces<T extends DisplayPlace>(places: T[], { query = '', category = 'all', region = 'all', saved = null, origin = null, radius = 100, bounds = null, sort = 'curated' }: FilterOptions = {}): T[] {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   const results = places.filter(p => {
     const searchable = [p.name, p.city, p.country, p.category, p.neighborhood, p.description, ...(p.tags || [])].join(' ').toLocaleLowerCase();
@@ -21,6 +21,7 @@ export function filterPlaces(places: Place[], { query = '', category = 'all', re
   });
   if (origin) results.sort((a, b) => distanceKm(origin, a.coordinates) - distanceKm(origin, b.coordinates));
   else if (sort === 'name') results.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sort === 'curated') results.sort((a,b) => (b.sourceCount??1)-(a.sourceCount??1) || a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
   else if (sort === 'recent') results.sort((a, b) => (b.source.date || '').localeCompare(a.source.date || ''));
   return results;
 }

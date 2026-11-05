@@ -1,0 +1,33 @@
+import {useEffect,useState} from 'react';
+import type {PipelineRun} from '../../shared/pilot-preview';
+import {PipelineFunnel} from './PipelineFunnel';
+import {cn,buttonClass,secondaryClass,controlClass} from '../lib';
+const date=(value:string)=>new Date(value).toLocaleString([],{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'});
+export function PipelineRuns(){
+ const [from,setFrom]=useState(''),[to,setTo]=useState(''),[runs,setRuns]=useState<PipelineRun[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false),[sending,setSending]=useState(false),[version,setVersion]=useState(0),[selectedId,setSelectedId]=useState<string|null>(null);
+ useEffect(()=>{let disposed=false,pending=false;const controller=new AbortController();const poll=async()=>{if(pending)return;pending=true;try{const r=await fetch('/api/pipeline/runs',{signal:controller.signal});if(!r.ok)throw Error('Date-range runs are unavailable. Check the database migrations.');const data=await r.json();if(!disposed)setRuns(data.runs);}catch(error){if(!disposed&&!(error instanceof Error&&error.name==='AbortError'))setError(String(error));}finally{pending=false;}};void poll();const timer=setInterval(()=>{if(document.visibilityState==='visible')void poll();},5000);return()=>{disposed=true;controller.abort();clearInterval(timer);};},[version]);
+ const start=async(from:string,to:string,retry=false)=>{setBusy(true);setError('');setSending(true);try{const r=await fetch('/api/pipeline/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,retry})});const data=await r.json();if(!r.ok)throw Error(data.error??'Could not start the pipeline');setSelectedId(data.id);setVersion(v=>v+1);}catch(error){setError(error instanceof Error?error.message:String(error));}finally{setBusy(false);setSending(false);}};
+ const control=async(run:PipelineRun,stage:'collect'|'label'|'enrich',action:'pause'|'resume'|'advance')=>{setBusy(true);setError('');try{const r=await fetch(`/api/pipeline/runs/${run.id}/control`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage,action})});const data=await r.json();if(!r.ok)throw Error(data.error??'Could not update stage');setRuns(previous=>previous.map(item=>item.id===run.id?{...item,stage_config:data.stage_config,requested_stage:data.requested_stage}:item));setVersion(v=>v+1);}catch(error){setError(error instanceof Error?error.message:String(error));}finally{setBusy(false);}};
+ const selected=runs.find(run=>run.id===selectedId)??runs[0];
+ return <section aria-label="Date-range pipeline" className="my-7">
+  <h2 className="font-editorial text-[27px] leading-tight">Control the flow.</h2>
+  <p className="mt-2 max-w-3xl text-xs leading-[1.8] text-muted">Comments flow into recommendations, then locations, links and map cards. Open or close each valve to control what moves next.</p>
+  <details className="mt-4 border-b border-rule pb-4" open={!runs.length}><summary className={cn(controlClass,'w-fit cursor-pointer text-xs text-muted')}>New date range</summary>
+  <form onSubmit={event=>{event.preventDefault();void start(from,to);}} className="mt-5 flex flex-wrap items-end gap-3">
+   <label className="flex flex-col gap-1.5 text-[11px]">From<input required type="date" value={from} onChange={e=>setFrom(e.target.value)} max={to||new Date().toISOString().slice(0,10)} className={cn(controlClass,'rounded border border-rule bg-paper px-3 py-2.5 text-xs')}/></label>
+   <label className="flex flex-col gap-1.5 text-[11px]">Through<input required type="date" value={to} onChange={e=>setTo(e.target.value)} min={from} max={new Date().toISOString().slice(0,10)} className={cn(controlClass,'rounded border border-rule bg-paper px-3 py-2.5 text-xs')}/></label>
+   <button disabled={busy} className={buttonClass}>{sending?'Starting…':'Run pipeline'}</button>
+  </form><p className="mt-2 text-[10px] text-muted">Dates include both selected days, in UTC.</p></details>
+  {error&&<p role="alert" className="mt-4 text-xs text-accent">{error}</p>}
+  {runs.length>1&&<label className="mt-5 flex flex-wrap items-center gap-3 text-[11px] text-muted">Viewing run<select value={selected?.id??''} onChange={event=>setSelectedId(event.target.value)} className={cn(controlClass,'max-w-full rounded border border-rule bg-paper px-3 py-2 text-xs text-ink')}>{runs.map(run=><option key={run.id} value={run.id}>{date(run.from_at)} → {date(run.to_at)} UTC · {run.state}</option>)}</select></label>}
+  <div className="mt-4" aria-live="polite">{selected&&[selected].map(run=><article key={run.id} className="border-t border-rule pt-4">
+   <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium">{date(run.from_at)} → {date(run.to_at)} UTC</p><span className={cn('font-mono text-[10px]',run.state==='complete'?'text-sage':run.state==='failed'||run.state==='attention'||run.stale?'text-accent':'text-muted')}>{run.stale?'Interrupted · resume available':run.state==='attention'?'Finished · needs attention':run.state}</span></div>
+   <p className="mt-2 text-[11px] leading-relaxed text-muted">{run.counts.comments.toLocaleString()} comments collected · {run.counts.labeled.toLocaleString()} labeled · {run.counts.proposals} recommendations · {run.counts.researched} researched · {run.counts.located??run.counts.ready} located · images deferred</p>
+   <PipelineFunnel run={run} busy={busy} onControl={(stage,action)=>void control(run,stage,action)}/>
+   {!!run.failures?.length&&<ul className="mt-3 space-y-2 text-[11px] text-accent">{run.failures.map((failure,index)=><li key={index}>{failure.kind}: {failure.message} ({failure.attempts} attempts)</li>)}</ul>}
+   {!!run.issues?.length&&<details className="mt-3 text-[11px]"><summary className={cn(controlClass,'cursor-pointer text-accent')}>Results needing attention ({run.issues.length})</summary><ul className="mt-2 space-y-2 text-muted">{run.issues.map((item,index)=><li key={index}><strong className="font-medium text-ink">{item.name}:</strong> {item.issues?.join('; ')}</li>)}</ul></details>}
+   {run.last_error&&<p className="mt-2 text-xs text-accent">{run.last_error}</p>}
+   {(['failed','attention','queued'].includes(run.state)||run.stale)&&<button disabled={busy} onClick={()=>void start(run.from_at,run.to_at,true)} className={cn(secondaryClass,'mt-3 px-3 py-2 text-[10px]')}>{run.state==='attention'?'Retry incomplete results':'Resume run'}</button>}
+  </article>)}{!runs.length&&<p className="text-[11px] text-muted">No date-range runs yet. Completed work appears on the map automatically; unresolved details remain visible for review.</p>}</div>
+ </section>;
+}

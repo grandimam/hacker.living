@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { validatePublished, validatePlace, findDuplicate, normalizeText, publicHttpsUrl, isCandidate, guessPlaceNames, resolveHnComment, checkOfficialUrl, requestJson } from '../scripts/pipeline-core.ts';
 import { parseCandidateQueue, parseSearchResponse } from '../scripts/pipeline-data.ts';
-const data = validatePublished(JSON.parse(await readFile(new URL('../data/places.json', import.meta.url), 'utf8')));
+const data = validatePublished(JSON.parse(await readFile(new URL('./fixtures/places.json', import.meta.url), 'utf8')));
 const example = data.places.find(p => p.id === 'crossness');
 assert.ok(example);
 const response = (body: unknown): Response => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });

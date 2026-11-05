@@ -1,0 +1,19 @@
+# Allow only application inputs. Never send local credentials or datasets to Docker.
+**
+!Dockerfile
+!package.json
+!package-lock.json
+!index.html
+!tsconfig.json
+!vite.config.ts
+!src/
+!src/**
+!server/
+!server/**
+!shared/
+!shared/**
+!scripts/
+!scripts/**
+!public/
+!public/**
+public/places.json

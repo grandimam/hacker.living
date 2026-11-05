@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { validatePublished } from '../scripts/pipeline-core.ts';
 import type { Coordinates, Place } from '../shared/types.ts';
 import { filterPlaces, distanceKm, parseSaved } from '../shared/domain.ts';
-const { places } = validatePublished(JSON.parse(await readFile(new URL('../data/places.json', import.meta.url), 'utf8')));
+const { places } = validatePublished(JSON.parse(await readFile(new URL('./fixtures/places.json', import.meta.url), 'utf8')));
 
 test('search finds cities, place names, and interests without case sensitivity', () => {
   assert.deepEqual(filterPlaces(places, { query: 'CROSSNESS' }).map(p => p.id), ['crossness']);
@@ -34,4 +34,11 @@ test('corrupt or obsolete local saves never break discovery', () => {
   assert.deepEqual([...parseSaved('broken json',valid)],[]);
   assert.deepEqual([...parseSaved('{"wrong":"shape"}',valid)],[]);
   assert.deepEqual([...parseSaved('["crossness","missing",4,"crossness"]',valid)],['crossness']);
+});
+
+test('Top orders distinct source counts; A–Z orders names without mutating the input', () => {
+ const sample=[{...places[0],id:'z',name:'Zulu',sourceCount:8},{...places[1],id:'a',name:'Alpha',sourceCount:1},{...places[2],id:'b',name:'Beta',sourceCount:8}];
+ assert.deepEqual(filterPlaces(sample,{sort:'curated'}).map(p=>p.id),['b','z','a']);
+ assert.deepEqual(filterPlaces(sample,{sort:'name'}).map(p=>p.id),['a','b','z']);
+ assert.deepEqual(sample.map(p=>p.id),['z','a','b']);
 });

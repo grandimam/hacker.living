@@ -60,6 +60,7 @@ export interface Place {
 
 export interface DraftPlace extends Omit<Place, 'coordinates' | 'officialCheckedAt' | 'review'> {
   candidateId?: string;
+  proposalId?: string;
   coordinates: [number | null, number | null];
   officialCheckedAt: string | null;
   review: ReviewMetadata;
@@ -85,4 +86,12 @@ export interface FilterOptions {
   radius?: number;
   bounds?: Bounds | null;
   sort?: string;
+}
+
+/** A browsable research result; intentionally cannot masquerade as an approved Place. */
+export interface DisplayPlace extends Omit<Place, 'review' | 'source'> {
+  review: ReviewMetadata;
+  sourceCount?: number;
+  source: Omit<Source, 'storyId'> & {storyId: number | null};
+  research?: {notes:string;address:string;coordinatePrecision:string;officialStatus:number|null};
 }

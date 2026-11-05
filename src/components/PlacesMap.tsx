@@ -4,8 +4,8 @@ import type { Bounds, Coordinates, Place } from '../types';
 import { cn } from '../lib';
 
 export type MapHandle = { fit: (places: Place[]) => void; bounds: () => Bounds | null; center: (coordinates: Coordinates, zoom?: number) => void };
-type Props = { places: Place[]; selected?: string; onSelect: (id: string) => void; preview?: boolean; focusSelection?: boolean; fitKey?: string; className?: string };
-export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places,selected,onSelect,preview=false,focusSelection=true,fitKey='',className}, ref) {
+type Props = { places: Place[]; selected?: string; onSelect: (id: string) => void; preview?: boolean; focusSelection?: boolean; fitKey?: string; fitToResults?: boolean; className?: string };
+export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places,selected,onSelect,preview=false,focusSelection=true,fitKey='',fitToResults=true,className}, ref) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const markerLayer = useRef<L.LayerGroup | null>(null);
@@ -21,7 +21,7 @@ export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places
   useImperativeHandle(ref, () => ({fit,bounds: () => {const b=map.current?.getBounds();return b ? {north:b.getNorth(),south:b.getSouth(),west:b.getWest(),east:b.getEast()} : null;},center:(coordinates,zoom=12) => map.current?.setView(coordinates,zoom,{animate:false})}));
   useEffect(() => {
     if(!container.current) return;
-    const current = L.map(container.current,{zoomControl:false,scrollWheelZoom:!preview,dragging:!preview,touchZoom:!preview,doubleClickZoom:!preview,boxZoom:!preview,keyboard:!preview}).setView([51.509,-.10],11);
+    const current = L.map(container.current,{zoomControl:false,scrollWheelZoom:!preview,dragging:!preview,touchZoom:!preview,doubleClickZoom:!preview,boxZoom:!preview,keyboard:!preview}).setView([20,0],2);
     current.attributionControl.setPrefix(false);
     const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,updateWhenIdle:true,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(current);
     let failures=0;tiles.on('tileerror',()=>{if(++failures>3)setTileError(true);});tiles.on('tileload',()=>setTileError(false));
@@ -39,7 +39,7 @@ export const PlacesMap = forwardRef<MapHandle, Props>(function PlacesMap({places
       L.marker(p.coordinates,{title:`${index+1}. ${p.name}`,alt:`${index+1}. ${p.name}`,riseOnHover:true,zIndexOffset:active?1000:0,icon:L.divIcon({className:'',html,iconSize:[32,40],iconAnchor:[16,36]})}).addTo(layer).bindTooltip(tooltip,{direction:'top',offset:[0,-32]}).on('click',()=>callback.current(p.id));
     }
   },[places,selected,preview]);
-  useEffect(()=>{if(!preview)fit(places);},[fitKey,preview]);
+  useEffect(()=>{if(!preview&&fitToResults)fit(places);},[fitKey,preview,fitToResults,places]);
   useEffect(()=>{
     const p=places.find(p=>p.id===selected);if(!p||!map.current||preview||!focusSelection)return;
     map.current.setView(p.coordinates,Math.max(12,map.current.getZoom()),{animate:false});

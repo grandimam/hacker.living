@@ -1,0 +1,58 @@
+name: hacker-living
+services:
+  caddy:
+    image: caddy:2-alpine
+    profiles: [public]
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-hacker.living}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+  app:
+    build: .
+    init: true
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hacker-living-local}
+      HOST: 0.0.0.0
+      PORT: 4317
+    ports:
+      - "127.0.0.1:${APP_PORT:-4317}:4317"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4317/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  db:
+    image: postgis/postgis:17-3.6@sha256:1ac10b2551ba84ae05db8e7da477afcd0a3fede99bcb7705da2ee157390cb095
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hacker_living
+      POSTGRES_USER: hacker_living
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hacker-living-local}
+    ports:
+      - "127.0.0.1:${DATABASE_PORT:-55432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hacker_living -d hacker_living"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

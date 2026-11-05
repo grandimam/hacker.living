@@ -1,0 +1,5 @@
+import {createRun} from '../server/pipeline/runs.ts';
+import {executeRun} from '../server/pipeline/worker.ts';
+import {closeDatabase} from '../server/db/connection.ts';
+async function main(){const args=process.argv.slice(2);const allowed=['--from','--to','--run'];for(let i=0;i<args.length;i+=2)if(!allowed.includes(args[i])||!args[i+1])throw Error('Use --from YYYY-MM-DD --to YYYY-MM-DD, or --run <UUID>');const value=(key:string)=>args[args.indexOf(key)+1];let id:string;if(args.includes('--run')){id=value('--run');if(!/^[0-9a-f-]{36}$/.test(id))throw Error('Invalid run ID');}else{if(!args.includes('--from')||!args.includes('--to'))throw Error('Use --from YYYY-MM-DD --to YYYY-MM-DD');id=(await createRun(value('--from'),value('--to'))).id;}console.log(`Pipeline run ${id} — follow at http://localhost:4317/pipeline`);for(let attempt=0;attempt<4;attempt++){if(await executeRun(id)!==false)break;await new Promise(resolve=>setTimeout(resolve,500));}}
+main().catch(error=>{console.error(error instanceof Error?error.message:String(error));process.exitCode=1;}).finally(closeDatabase);

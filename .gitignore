@@ -12,3 +12,9 @@ data/labeling-pilot/
 .env
 .env.*
 !.env.example
+data/archive/
+data/backups/
+
+# Local datasets, exports, and generated research stay outside source control.
+/data/
+/docs/august-place-research.md

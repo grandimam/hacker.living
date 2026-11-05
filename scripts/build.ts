@@ -1,13 +1,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { build } from 'vite';
-import './prepare-data.ts';
-import { validatePublished } from './pipeline-core.ts';
-const data = validatePublished(JSON.parse(await readFile('data/places.json', 'utf8')));
+// Catalog data comes from PostgreSQL at runtime, never from the build context.
 await build();
 const html = await readFile('dist/index.html', 'utf8');
-for (const path of ['places', 'saved', 'about', 'credits', ...data.places.map(p => `places/${p.id}`)]) {
-  await mkdir(`dist/${path}`, { recursive: true });
-  await writeFile(`dist/${path}/index.html`, html);
+const routes=['places','saved','about','credits','pipeline','pipeline/fonts','fonts'];
+for(const path of routes){
+ await mkdir(`dist/${path}`,{recursive:true});
+ await writeFile(`dist/${path}/index.html`,html);
 }
-await writeFile('dist/404.html', html);
-console.log(`Built React + Tailwind site: ${data.places.length} reviewed places, ${data.places.length + 6} deep-link routes.`);
+await writeFile('dist/404.html',html);
+console.log(`Built React + Tailwind site with ${routes.length+2} entry routes; place details use the server SPA fallback.`);

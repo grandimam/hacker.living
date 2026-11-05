@@ -81,7 +81,7 @@ export function validatePlace(value: unknown, { approved = true }: { approved?: 
   for (const date of [source.date, review.reviewedAt, officialCheckedAt]) if (date && (!Number.isFinite(Date.parse(date)) || Date.parse(date) > Date.now() + 86400000)) throw new Error(`${id}: invalid or future evidence date`);
   const sources = p.sources === undefined ? undefined : Array.isArray(p.sources) ? p.sources.map(s => parseSource(s, id)) : (() => { throw new Error(`${id}: invalid sources`); })();
   const common = { id, name: text(p.name, `${id}: name`), city: text(p.city, `${id}: city`), country: text(p.country, `${id}: country`), category, coordinates, coordinateSource, description: text(p.description, `${id}: description`), reason: text(p.reason, `${id}: reason`), visitNote: text(p.visitNote, `${id}: visit note`), tags: p.tags === undefined ? [] : stringList(p.tags, `${id}: tags`), neighborhood: typeof p.neighborhood === 'string' ? p.neighborhood : undefined, officialUrl, source, sources, image: parseImage(p.image) };
-  if (!approved) return { ...common, candidateId: typeof p.candidateId === 'string' ? p.candidateId : undefined, officialCheckedAt, review };
+  if (!approved) return { ...common, candidateId: typeof p.candidateId === 'string' ? p.candidateId : undefined, proposalId: typeof p.proposalId === 'string' ? p.proposalId : undefined, officialCheckedAt, review };
   // These checks narrow the validated metadata into the published record type.
   if (!officialCheckedAt || !review.reviewedAt) throw new Error(`${id}: approval and official-link check are required`);
   return { ...common, officialCheckedAt, review: { ...review, status: 'approved', reviewedAt: review.reviewedAt } };

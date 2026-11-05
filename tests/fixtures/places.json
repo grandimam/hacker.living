@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-04T19:46:48.783Z",
+  "places": [
+    {
+      "id": "crossness",
+      "name": "Crossness Pumping Station",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Engineering",
+      "coordinates": [
+        51.509142,
+        0.138418
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Crossness_Pumping_Station",
+      "description": "Ornate Victorian ironwork and monumental steam engines at London\u2019s historic sewage pumping station.",
+      "reason": "A commenter discovered Crossness while walking along the Thames and singled out the Victorian pumping station as incredible.",
+      "visitNote": "Open on selected dates. Check the official calendar and book ahead.",
+      "tags": [],
+      "officialUrl": "https://crossness.org.uk/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 32700879,
+        "storyId": 32686987,
+        "url": "https://news.ycombinator.com/item?id=32700879",
+        "discussionUrl": "https://news.ycombinator.com/item?id=32686987",
+        "author": "andybak",
+        "date": "2022-09-03T11:41:38.000Z",
+        "quote": "I discovered an incredible Victorian pumping station"
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/crossness-hero.jpg",
+        "alt": "The Octagon, Crossness Pumping Station",
+        "author": "Steve Cadman",
+        "license": "CC BY-SA 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Octagon,_Crossness_Pumping_Station.jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "greenwich",
+      "name": "Royal Observatory Greenwich",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Observatories",
+      "coordinates": [
+        51.477806,
+        -0.001472
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Royal_Observatory,_Greenwich#Prime_meridian",
+      "description": "A historic observatory connecting astronomy, navigation, and the measurement of time.",
+      "reason": "A commenter includes Harrison\u2019s H1 at Greenwich in a recommended tour of machines that changed the world.",
+      "visitNote": "Check current tickets and access on the official website.",
+      "tags": [],
+      "officialUrl": "https://www.rmg.co.uk/royal-observatory",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 9200001,
+        "storyId": 9199500,
+        "url": "https://news.ycombinator.com/item?id=9200001",
+        "discussionUrl": "https://news.ycombinator.com/item?id=9199500",
+        "author": "ChuckMcM",
+        "date": "2015-03-13T21:00:17.000Z",
+        "quote": null
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/greenwich.jpg",
+        "alt": "View of the Royal Observatory Greenwich from One Tree Hill in Greenwich Park, London, 20260719 0940 4508",
+        "author": "Jakub Ha\u0142un",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:View_of_the_Royal_Observatory_Greenwich_from_One_Tree_Hill_in_Greenwich_Park,_London,_20260719_0940_4508.jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "soane",
+      "name": "Sir John Soane\u2019s Museum",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Museums",
+      "coordinates": [
+        51.516998,
+        -0.117402
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Sir_John_Soane%27s_Museum",
+      "description": "An architect\u2019s house packed with antiquities, models, paintings, and unexpected uses of space.",
+      "reason": "A commenter recommends Soane\u2019s for a collection experienced close to its original arrangement, paired with the Hunterian across the square.",
+      "visitNote": "Free entry. Open Wednesday\u2013Sunday; tours and larger groups require booking.",
+      "tags": [],
+      "officialUrl": "https://www.soane.org/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 43642388,
+        "storyId": 43601282,
+        "url": "https://news.ycombinator.com/item?id=43642388",
+        "discussionUrl": "https://news.ycombinator.com/item?id=43601282",
+        "author": "moomin",
+        "date": "2025-04-10T10:00:12.000Z",
+        "quote": "Soane's gives you an experience closer to the original."
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/soane.jpg",
+        "alt": "Interior view - Sir John Soane's Museum - DSC00041",
+        "author": "Daderot",
+        "license": "CC0",
+        "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Interior_view_-_Sir_John_Soane%27s_Museum_-_DSC00041.jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "hunterian",
+      "name": "Hunterian Museum",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Museums",
+      "coordinates": [
+        51.51528,
+        -0.11583
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Hunterian_Museum%2C_London",
+      "description": "The art and science of surgery, with John Hunter\u2019s anatomical specimens and historic instruments.",
+      "reason": "A visitor recommends seeing historic surgery up close to appreciate how dramatically medical practice changed over a century.",
+      "visitNote": "Free entry; booking recommended. Tuesday\u2013Saturday, 10am\u20135pm.",
+      "tags": [],
+      "officialUrl": "https://hunterianmuseum.org/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 8856113,
+        "storyId": 8854453,
+        "url": "https://news.ycombinator.com/item?id=8856113",
+        "discussionUrl": "https://news.ycombinator.com/item?id=8854453",
+        "author": "iamben",
+        "date": "2015-01-08T12:37:42.000Z",
+        "quote": null
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": null
+    },
+    {
+      "id": "grant",
+      "name": "Grant Museum of Zoology",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Museums",
+      "coordinates": [
+        51.52373,
+        -0.13427
+      ],
+      "coordinateSource": "https://mapcarta.com/N1216160782",
+      "description": "A compact university zoology collection with rare specimens and a long teaching history.",
+      "reason": "A commenter highlights rare Tasmanian tiger specimens and the knowledgeable team, recommending a conversation with staff.",
+      "visitNote": "Check UCL\u2019s current visitor information before travelling.",
+      "tags": [],
+      "officialUrl": "https://www.ucl.ac.uk/engage/museums-collections/grant-museum-zoology",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 21146431,
+        "storyId": 21143894,
+        "url": "https://news.ycombinator.com/item?id=21146431",
+        "discussionUrl": "https://news.ycombinator.com/item?id=21143894",
+        "author": "ljf",
+        "date": "2019-10-03T12:58:49.000Z",
+        "quote": "It is a tiny museum, but well worth a visit"
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": null
+    },
+    {
+      "id": "horniman",
+      "name": "Horniman Museum and Gardens",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Museums",
+      "coordinates": [
+        51.441131,
+        -0.060736
+      ],
+      "coordinateSource": "https://museweb.dcs.bbk.ac.uk/Museum/mm.domus.SE309",
+      "description": "Musical instruments, natural history, and gardens overlooking south London.",
+      "reason": "A commenter interested in historic string instruments points to the Horniman\u2019s musical instrument collection.",
+      "visitNote": "Check current gallery access and ticket information on the official site.",
+      "tags": [],
+      "officialUrl": "https://www.horniman.ac.uk/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 47044416,
+        "storyId": 47000708,
+        "url": "https://news.ycombinator.com/item?id=47044416",
+        "discussionUrl": "https://news.ycombinator.com/item?id=47000708",
+        "author": "seanhunter",
+        "date": "2026-02-17T06:44:26.000Z",
+        "quote": "If you're interested in historical instruments, the Horniman museum in London has a great collection."
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/horniman.jpg",
+        "alt": "Horniman Museum tower, 2015",
+        "author": "No Swan So Fine",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Horniman_Museum_tower,_2015.jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "wellcome",
+      "name": "Wellcome Collection",
+      "city": "London",
+      "country": "United Kingdom",
+      "category": "Libraries",
+      "coordinates": [
+        51.525944,
+        -0.133889
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Wellcome_Collection",
+      "description": "A free museum and library exploring health, human experience, medicine, and art.",
+      "reason": "A commenter recommends the medically focused museum as a consistently fascinating London stop.",
+      "visitNote": "Free museum and library; check individual exhibitions and event booking.",
+      "tags": [],
+      "officialUrl": "https://wellcomecollection.org/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 8493379,
+        "storyId": 8492815,
+        "url": "https://news.ycombinator.com/item?id=8493379",
+        "discussionUrl": "https://news.ycombinator.com/item?id=8492815",
+        "author": "elemeno",
+        "date": "2014-10-22T16:16:27.000Z",
+        "quote": "Pretty much always fascinating and worth a visit!"
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": null
+    },
+    {
+      "id": "tnmoc",
+      "name": "The National Museum of Computing",
+      "city": "Bletchley",
+      "country": "United Kingdom",
+      "category": "Computing",
+      "coordinates": [
+        51.9985,
+        -0.7435
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/The_National_Museum_of_Computing",
+      "description": "Working historic computers, Colossus, and the story of computing on the Bletchley Park estate.",
+      "reason": "A visitor praises the working replicas and guides\u2019 deep knowledge of codebreaking machines.",
+      "visitNote": "Separate admission from Bletchley Park. Check the museum\u2019s own Days Open page.",
+      "tags": [],
+      "officialUrl": "https://www.tnmoc.org/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 41398064,
+        "storyId": 41396501,
+        "url": "https://news.ycombinator.com/item?id=41398064",
+        "discussionUrl": "https://news.ycombinator.com/item?id=41396501",
+        "author": "lfn3",
+        "date": "2024-08-30T06:04:00.000Z",
+        "quote": "The working replicas of electro-mechanical computers were terrific"
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/tnmoc.jpg",
+        "alt": "Frontal view of the reconstructed Colossus at The National Museum of Computing, Bletchley Park",
+        "author": "TedColes",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Frontal_view_of_the_reconstructed_Colossus_at_The_National_Museum_of_Computing,_Bletchley_Park.jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "exploratorium",
+      "name": "Exploratorium",
+      "city": "San Francisco",
+      "country": "United States",
+      "category": "Science",
+      "coordinates": [
+        37.8014,
+        -122.3976
+      ],
+      "coordinateSource": "https://en.wikipedia.org/wiki/Exploratorium",
+      "description": "A hands-on laboratory of science, art, and human perception at Pier 15.",
+      "reason": "A commenter recommends it specifically for an interactive museum experience enjoyed beyond its younger audience.",
+      "visitNote": "Check ticket availability and current hours; adults-only After Dark events are also offered.",
+      "tags": [],
+      "officialUrl": "https://www.exploratorium.edu/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 9776288,
+        "storyId": 9761488,
+        "url": "https://news.ycombinator.com/item?id=9776288",
+        "discussionUrl": "https://news.ycombinator.com/item?id=9761488",
+        "author": "lamina",
+        "date": "2015-06-25T06:27:36.000Z",
+        "quote": "If you're looking for something more interactive, check out the Exploratorium."
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": {
+        "path": "/assets/photos/exploratorium.jpg",
+        "alt": "Exploratorium entrance at Pier 15, SF (Nov 2015)",
+        "author": "Photograph by Mike Peel (www.mikepeel.net).",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Exploratorium_entrance_at_Pier_15,_SF_(Nov_2015).jpg",
+        "modifications": "Downloaded Wikimedia thumbnail; displayed with responsive cropping."
+      }
+    },
+    {
+      "id": "jurassic",
+      "name": "Museum of Jurassic Technology",
+      "city": "Los Angeles",
+      "country": "United States",
+      "category": "Museums",
+      "coordinates": [
+        34.02586,
+        -118.39508
+      ],
+      "coordinateSource": "https://mapcarta.com/W323743997",
+      "description": "An enigmatic museum where the conventions of collecting become an art form.",
+      "reason": "A commenter praises its unusual curation, which moves between real niche cultural practices and compelling fictional histories.",
+      "visitNote": "The museum recommends reserving admission online in advance.",
+      "tags": [],
+      "officialUrl": "https://www.mjt.org/",
+      "officialCheckedAt": "2026-11-04",
+      "source": {
+        "commentId": 47528660,
+        "storyId": 47495008,
+        "url": "https://news.ycombinator.com/item?id=47528660",
+        "discussionUrl": "https://news.ycombinator.com/item?id=47495008",
+        "author": "in_a_hole",
+        "date": "2026-03-26T10:19:43.000Z",
+        "quote": "I've never been anywhere quite like it."
+      },
+      "review": {
+        "status": "approved",
+        "reviewedAt": "2026-11-04",
+        "method": "Manually researched against linked HN comment and official website"
+      },
+      "image": null
+    }
+  ]
+}
