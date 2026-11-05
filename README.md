@@ -1,6 +1,6 @@
 <div align="center">
 
-# hacker.living
+<h1><img src="./docs/assets/hacker-living.svg" alt="hacker.living" width="640" /></h1>
 
 ### Millions of comments. Useful discoveries. Original sources.
 

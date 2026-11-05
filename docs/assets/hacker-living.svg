@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+  <title id="title">hacker.living</title>
+  <desc id="desc">An orange h mark beside the hacker.living wordmark. Discoveries from the Hacker News community.</desc>
+  <rect width="720" height="180" rx="20" fill="#faf8f3"/>
+  <rect x="42" y="44" width="92" height="92" rx="12" fill="#e84b10"/>
+  <text x="88" y="113" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="76" font-weight="700">h</text>
+  <text x="160" y="105" fill="#25251f" font-family="Arial,Helvetica,sans-serif" font-size="64" font-weight="700" letter-spacing="-3">hacker.living</text>
+  <text x="163" y="135" fill="#77766d" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing=".25">Discoveries from the Hacker News community.</text>
+</svg>
