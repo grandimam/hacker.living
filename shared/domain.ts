@@ -1,12 +1,14 @@
-export function distanceKm(a, b) {
-  const rad = x => x * Math.PI / 180;
+import type { Coordinates, FilterOptions, Place } from './types.ts';
+
+export function distanceKm(a: Coordinates, b: Coordinates): number {
+  const rad = (x: number) => x * Math.PI / 180;
   const dLat = rad(b[0] - a[0]);
   const dLon = rad(b[1] - a[1]);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLon / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)));
 }
 
-export function filterPlaces(places, { query = '', category = 'all', region = 'all', saved = null, origin = null, radius = 100, bounds = null, sort = 'curated' } = {}) {
+export function filterPlaces(places: Place[], { query = '', category = 'all', region = 'all', saved = null, origin = null, radius = 100, bounds = null, sort = 'curated' }: FilterOptions = {}): Place[] {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   const results = places.filter(p => {
     const searchable = [p.name, p.city, p.country, p.category, p.neighborhood, p.description, ...(p.tags || [])].join(' ').toLocaleLowerCase();
@@ -23,9 +25,9 @@ export function filterPlaces(places, { query = '', category = 'all', region = 'a
   return results;
 }
 
-export function parseSaved(raw, validIds) {
+export function parseSaved(raw: string | null, validIds: Set<string>): Set<string> {
   try {
-    const parsed = JSON.parse(raw || '[]');
-    return new Set(Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string' && validIds.has(x)) : []);
-  } catch { return new Set(); }
+    const parsed: unknown = JSON.parse(raw || '[]');
+    return new Set(Array.isArray(parsed) ? parsed.filter((x: unknown): x is string => typeof x === 'string' && validIds.has(x)) : []);
+  } catch { return new Set<string>(); }
 }

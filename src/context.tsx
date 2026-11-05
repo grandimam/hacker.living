@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Place } from './types';
-import { parseSaved } from '../shared/domain.mjs';
+import { parseSaved } from '../shared/domain.ts';
 const storageKey = 'hacker.living.saved.v1';
 type AppState = { places: Place[]; saved: Set<string>; toggleSaved: (id: string) => void; notify: (message: string) => void; loading: boolean; error: string | null };
 const AppContext = createContext<AppState | null>(null);

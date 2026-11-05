@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { filterPlaces, distanceKm, parseSaved } from '../shared/domain.mjs';
-const { places } = JSON.parse(await readFile(new URL('../data/places.json', import.meta.url)));
+import { validatePublished } from '../scripts/pipeline-core.ts';
+import type { Coordinates, Place } from '../shared/types.ts';
+import { filterPlaces, distanceKm, parseSaved } from '../shared/domain.ts';
+const { places } = validatePublished(JSON.parse(await readFile(new URL('../data/places.json', import.meta.url), 'utf8')));
 
 test('search finds cities, place names, and interests without case sensitivity', () => {
   assert.deepEqual(filterPlaces(places, { query: 'CROSSNESS' }).map(p => p.id), ['crossness']);
@@ -16,7 +18,7 @@ test('category, region, and saved filters intersect', () => {
   assert.equal(filterPlaces(places, { saved: new Set() }).length, 0);
 });
 test('nearby filters exclude distant places and sort by actual distance', () => {
-  const sf = [37.80, -122.40];
+  const sf: Coordinates = [37.80, -122.40];
   assert.deepEqual(filterPlaces(places, { origin: sf, radius: 100 }).map(p => p.id), ['exploratorium']);
   assert.equal(filterPlaces(places, { origin: [25.20,55.27], radius: 100 }).length, 0);
   assert.ok(distanceKm([51.5,0], [37.8,-122.4]) > 8000);
@@ -24,7 +26,7 @@ test('nearby filters exclude distant places and sort by actual distance', () => 
 });
 test('visible map bounds narrow the list; antimeridian bounds are supported', () => {
   assert.equal(filterPlaces(places, { bounds: { south:51.4,north:51.6,west:-.2,east:.2 } }).length,7);
-  const tiny = [{...places[0],coordinates:[0,179]},{...places[1],coordinates:[0,-179]},{...places[2],coordinates:[0,0]}];
+  const tiny: Place[] = [{...places[0],coordinates:[0,179]},{...places[1],coordinates:[0,-179]},{...places[2],coordinates:[0,0]}];
   assert.equal(filterPlaces(tiny,{bounds:{south:-1,north:1,west:170,east:-170}}).length,2);
 });
 test('corrupt or obsolete local saves never break discovery', () => {

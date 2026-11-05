@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowUpRight, Asterisk, Globe2, List, LocateFixed, Map as MapIcon, Search, X } from 'lucide-react';
+import { Globe2, Info, List, LocateFixed, Map as MapIcon, Search, X } from 'lucide-react';
 import { useApp } from '../context';
 import type { Bounds, Coordinates } from '../types';
-import { distanceKm, filterPlaces } from '../../shared/domain.mjs';
-import { cn, controlClass, buttonClass, secondaryClass, textLinkClass } from '../lib';
+import { distanceKm, filterPlaces } from '../../shared/domain.ts';
+import { cn, controlClass, buttonClass, secondaryClass } from '../lib';
 import { curatedOrder } from '../place-presentation';
 import { IconButton } from '../components/ui';
 import { PlacesMap, type MapHandle } from '../components/PlacesMap';
@@ -90,38 +90,39 @@ export function Places() {
   };
 
   return <>
-    <section className="flex flex-col justify-between gap-6 py-7 lg:flex-row lg:items-center lg:gap-9 lg:py-8">
-      <div className="shrink-0"><h1 className="font-editorial text-[42px] leading-none tracking-[-1.1px] sm:text-[49px] xl:text-[54px]">Your next good detour.</h1><p className="mt-3 text-xs leading-relaxed text-muted xl:text-sm">Unusual places worth visiting, found in Hacker News discussions.</p></div>
-      <div className="flex w-full items-center gap-3 lg:max-w-[610px]">
-        <form onSubmit={event => { event.preventDefault(); submitSearch(); }} className="flex min-w-0 flex-1 items-center gap-2 rounded border border-[#b9b7ad] px-3 py-2.5 focus-within:border-accent sm:px-4">
-          <button type="submit" aria-label="Search location or place" className={cn(controlClass, 'shrink-0 text-muted hover:text-accent')}><Search className="size-[18px]" strokeWidth={1.5}/></button>
-          <label className="sr-only" htmlFor="place-search">Find a city, place, or interest</label>
-          <input id="place-search" list="place-cities" className="h-5 w-full min-w-0 bg-transparent text-xs outline-none sm:text-[13px]" placeholder="Find a city, place, or interest…" value={searchInput} onChange={event => setSearchInput(event.target.value)}/>
-          {searchInput && <IconButton aria-label="Clear search" className="size-5" onClick={() => { setSearchInput(''); changeFilters({ city: 'all', q: '' }); }}><X className="size-3"/></IconButton>}
-          <datalist id="place-cities">{cities.map(city => <option key={city} value={cityLabel(city)}/>)}<option value="Everywhere"/></datalist>
+    <section aria-label="Find a place" className="grid gap-5 py-6 sm:py-7 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-8">
+      <div className="min-w-0"><h1 className="font-editorial text-[36px] font-normal leading-[1.12] tracking-[-.025em] sm:text-[43px] lg:text-[40px] xl:text-[46px]">Your next good detour.</h1><p className="mt-2 text-xs leading-relaxed text-muted sm:text-[13px]">Unusual places, recommended by people on Hacker News.</p></div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:flex-nowrap">
+        <form onSubmit={event => { event.preventDefault(); submitSearch(); }} className="contents sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:gap-2.5">
+          <div className="flex min-w-0 flex-1 basis-full items-center gap-2 rounded-[5px] sm:basis-auto border border-[#c8c5bb] px-3 py-3 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
+            <Search aria-hidden="true" className="size-[17px] shrink-0 text-muted" strokeWidth={1.5}/>
+            <label className="sr-only" htmlFor="place-search">Find a city, place, or interest</label>
+            <input id="place-search" list="place-cities" className="h-5 w-full min-w-0 bg-transparent text-xs outline-none sm:text-[13px]" placeholder="City, place, or interest…" value={searchInput} onChange={event => setSearchInput(event.target.value)}/>
+            {searchInput && <IconButton aria-label="Clear search" className="size-5" onClick={() => { setSearchInput(''); changeFilters({ city: 'all', q: '' }); }}><X className="size-3"/></IconButton>}
+            <datalist id="place-cities">{cities.map(city => <option key={city} value={cityLabel(city)}/>)}<option value="Everywhere"/></datalist>
+          </div>
+          <button type="submit" className={cn(buttonClass,'min-h-[46px] shrink-0 rounded-[5px] px-3 sm:px-4')}>Search</button>
         </form>
-        <button disabled={locating} onClick={locate} className={cn(buttonClass, 'min-h-[43px] shrink-0 px-3 text-xs sm:px-4')}><LocateFixed className="size-4"/>{locating ? 'Locating…' : 'Near me'}</button>
+        <button disabled={locating} onClick={locate} className={cn(secondaryClass,'min-h-[46px] shrink-0 rounded-[5px] border-[#c8c5bb] px-3 text-xs')}><LocateFixed className="size-4"/>{locating ? 'Locating…' : 'Near me'}</button>
       </div>
     </section>
 
     <section aria-label="Explore places">
       <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 border-y border-rule py-3.5">
-        <div role="group" aria-label="Place category" className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-0.5">{['all', ...categories].map(c => <button key={c} aria-pressed={category === c} onClick={() => changeFilters({ category: c === 'all' ? '' : c })} className={cn(controlClass, 'shrink-0 whitespace-nowrap rounded-[4px] border border-[#b9b7ad] px-3 py-2 text-[11px] transition-colors hover:border-accent hover:text-accent xl:px-4', category === c && 'border-accent bg-accent font-medium text-white hover:text-white')}>{c === 'all' ? 'All places' : c}</button>)}</div>
-        <div className="flex items-center gap-4 sm:gap-5">
-          <p aria-live="polite" className="whitespace-nowrap text-[11px] text-muted lg:border-l lg:border-rule lg:pl-5">{filtered.length} {filtered.length === 1 ? 'place' : 'places'}{origin ? ' near you' : region === 'all' ? ' to discover' : ` in ${region}`}</p>
-          <div role="group" aria-label="View" className="flex overflow-hidden rounded-[4px] border border-[#b9b7ad]">{[{label:'Map', icon:MapIcon, active:!listOnly}, {label:'List', icon:List, active:listOnly}].map(({label,icon:Icon,active}) => <button key={label} aria-label={label === 'Map' ? 'Map and list' : 'List only'} aria-pressed={active} onClick={() => { if(label === 'List') { close(); setListOnly(true); } else setListOnly(false); }} className={cn(controlClass, 'flex items-center gap-2 px-3 py-2 text-[11px] first:border-r first:border-rule', active && 'bg-accent-soft font-medium text-accent')}><Icon className="size-4" strokeWidth={1.5}/>{label}</button>)}</div>
-        </div>
+        <div role="group" aria-label="Place category" className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-0.5">{['all', ...categories].map(c => <button key={c} aria-pressed={category === c} onClick={() => changeFilters({ category: c === 'all' ? '' : c })} className={cn(controlClass, 'shrink-0 whitespace-nowrap rounded-[5px] border border-[#c8c5bb] px-3 py-2 text-[11px] transition-colors hover:border-ink hover:text-ink xl:px-4', category === c && 'border-ink bg-ink font-medium text-white hover:text-white')}>{c === 'all' ? 'All places' : c}</button>)}</div>
+        <div role="group" aria-label="View" className="flex overflow-hidden rounded-[5px] border border-[#c8c5bb]">{[{label:'Map', icon:MapIcon, active:!listOnly}, {label:'List', icon:List, active:listOnly}].map(({label,icon:Icon,active}) => <button key={label} aria-label={label === 'Map' ? 'Map and list' : 'List only'} aria-pressed={active} onClick={() => { if(label === 'List') { close(); setListOnly(true); } else setListOnly(false); }} className={cn(controlClass, 'flex items-center gap-2 px-3 py-2 text-[11px] first:border-r first:border-rule', active && 'bg-ink font-medium text-white')}><Icon className="size-4" strokeWidth={1.5}/>{label}</button>)}</div>
       </div>
       {placeId && !routePlace && <p role="status" className="bg-accent-soft px-4 py-3 text-xs">That place isn’t in this collection yet. Browse the recommendations below.</p>}
       {(origin || bounds || query) && <div className="flex items-center justify-between border-b border-rule py-2.5 text-[10px] text-muted">{origin ? 'Within 100 km of you' : bounds ? 'Searching the visible map' : `Results for “${query}”`}<button className={cn(controlClass, 'text-accent underline')} onClick={reset}>Clear filters ×</button></div>}
-      <div className={cn('mt-4 flex flex-col-reverse gap-4 md:grid md:h-[min(800px,calc(100dvh-265px))] md:min-h-[605px] md:grid-cols-[minmax(0,42%)_minmax(0,1fr)] lg:grid-cols-[minmax(0,39%)_minmax(0,1fr)]', listOnly && 'md:block md:h-auto md:min-h-[450px]')}>
-        <aside aria-label="Place recommendations" className="flex min-h-0 flex-col">
-          <div className="flex items-center justify-between gap-2 pb-3 pr-2"><h2 className="font-editorial text-[22px] leading-none">A few places you might have missed</h2><label><span className="sr-only">Sort places</span><select value={sort} onChange={e => setSort(e.target.value)} className={cn(controlClass, 'max-w-24 bg-transparent text-[9px] text-muted')}><option value="curated">Curated</option><option value="name">Name A–Z</option><option value="recent">Latest mention</option></select></label></div>
-          <div className={cn('min-h-0 flex-1 overscroll-contain md:overflow-y-auto', listOnly && 'grid md:grid-cols-2 md:overflow-visible 2xl:grid-cols-3 [&>article]:border-r [&>article]:border-rule')}>{filtered.length ? filtered.map(p => <PlaceCard key={p.id} place={p} selected={selected?.id === p.id} search={search} distance={origin ? distanceKm(origin,p.coordinates) : undefined}/>) : <div className="col-span-full mx-auto max-w-md px-6 py-14 text-center"><Search className="mx-auto mb-5 size-8 text-accent" strokeWidth={1.2}/><h2 className="font-editorial text-[33px] leading-none">Nothing here just yet.</h2><p className="mb-5 mt-4 text-xs leading-[1.8] text-muted">{origin ? 'This small collection has no places within 100 km of you yet. Explore the whole collection instead.' : 'Try another city, interest, or category. We’re starting small and adding thoughtfully.'}</p><button className={secondaryClass} onClick={reset}>Explore all places</button></div>}</div>
+      <div className={cn('flex flex-col-reverse md:grid md:h-[max(600px,calc(100dvh-285px))] md:grid-cols-[minmax(300px,38%)_minmax(0,1fr)] lg:grid-cols-[minmax(350px,34%)_minmax(0,1fr)]', listOnly && 'md:block md:h-auto md:min-h-[450px]')}>
+        <aside aria-label="Place recommendations" className="flex min-h-0 flex-col md:border-r md:border-rule">
+          <div className="flex items-start justify-between gap-2 px-4 py-5 sm:px-5"><div><h2 aria-live="polite" className="text-base font-semibold leading-snug tracking-[-.2px]">{filtered.length} {filtered.length === 1 ? 'place' : 'places'}{origin ? ' near you' : region === 'all' ? ' to discover' : ` in ${region}`}</h2><p className="mt-1.5 text-[11px] text-muted">Select a place to explore.</p></div><label><span className="sr-only">Sort places</span><select value={sort} onChange={e => setSort(e.target.value)} className={cn(controlClass, 'max-w-[100px] rounded-[4px] border border-rule bg-transparent px-2 py-1.5 text-[10px]')}><option value="curated">Curated</option><option value="name">Name A–Z</option><option value="recent">Latest mention</option></select></label></div>
+          <div className={cn('min-h-0 flex-1 overscroll-contain md:overflow-y-auto', listOnly && 'grid md:grid-cols-2 md:overflow-visible 2xl:grid-cols-3 [&>article]:border-r [&>article]:border-rule')}>{filtered.length ? filtered.map((p,index) => <PlaceCard number={index+1} key={p.id} place={p} selected={selected?.id === p.id} search={search} distance={origin ? distanceKm(origin,p.coordinates) : undefined}/>) : <div className="col-span-full mx-auto max-w-md px-6 py-14 text-center"><Search className="mx-auto mb-5 size-8 text-accent" strokeWidth={1.2}/><h2 className="font-editorial text-[33px] leading-none">Nothing here just yet.</h2><p className="mb-5 mt-4 text-xs leading-[1.8] text-muted">{origin ? 'This small collection has no places within 100 km of you yet. Explore the whole collection instead.' : 'Try another city, interest, or category. We’re starting small and adding thoughtfully.'}</p><button className={secondaryClass} onClick={reset}>Explore all places</button></div>}</div>
+          <p className="flex items-center gap-2 border-t border-rule px-4 py-3 text-[10px] text-muted sm:px-5"><Info aria-hidden="true" className="size-3.5 shrink-0"/>Original discussions. Official links.</p>
         </aside>
-        {!listOnly && <div className="relative isolate h-[380px] overflow-visible rounded-[4px] border border-rule bg-[#e6e8dd] md:h-auto md:min-h-0"><PlacesMap ref={map} places={filtered} selected={selected?.id} fitKey={fitKey} focusSelection={Boolean(placeId)} onSelect={id => navigate(`/places/${id}${search}`)}/><button onClick={() => setBounds(map.current?.bounds() || null)} className={cn(secondaryClass, 'absolute right-3 top-3 z-[500] min-h-8 gap-2 border-[#c3c6b8] px-3 py-2 text-[10px] shadow-sm')}><Search className="size-3.5"/>Search this area</button><button onClick={reset} className={cn(secondaryClass, 'absolute bottom-7 left-3 z-[500] min-h-7 gap-1.5 px-2 py-1.5 text-[8px] shadow-sm')}><Globe2 className="size-3"/>Show all places</button>{selected && <PlaceDetail place={selected} onClose={close} autoFocus={Boolean(placeId)}/>}</div>}
+        {!listOnly && <div className="relative isolate h-[400px] border-b border-rule bg-[#e6e8dd] md:h-auto md:min-h-0 md:border-b-0"><PlacesMap ref={map} places={filtered} selected={selected?.id} fitKey={fitKey} focusSelection={Boolean(placeId)} onSelect={id => navigate(`/places/${id}${search}`)}/><button onClick={() => setBounds(map.current?.bounds() || null)} className={cn(secondaryClass, 'absolute left-1/2 top-4 z-[500] min-h-8 -translate-x-1/2 gap-2 whitespace-nowrap rounded-[5px] border-[#c3c6b8] px-3 py-2 text-[10px] shadow-sm')}><Search className="size-3.5"/>Search this area</button><button onClick={reset} className={cn(secondaryClass, 'absolute right-3 top-[60px] z-[500] min-h-7 gap-1.5 px-2 py-1.5 text-[9px] shadow-sm')}><Globe2 className="size-3"/>Show all places</button>{selected && <PlaceDetail place={selected} onClose={close} autoFocus={Boolean(placeId)}/>}</div>}
       </div>
     </section>
-    <section className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-3 border-t border-rule py-4 text-[10px]"><Asterisk aria-hidden="true" className="size-5 text-accent"/><p>Real recommendations. Original discussions. Official links.</p><Link to="/about" className={cn(textLinkClass, 'ml-auto text-[10px] font-normal')}>How we curate <ArrowUpRight className="size-3"/></Link></section>
+
   </>;
 }

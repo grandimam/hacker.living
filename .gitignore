@@ -1,10 +1,14 @@
 node_modules/
 dist/
 .DS_Store
-.openai/*.tar.gz
-.openai/*.tgz
+.openai/
 data/runs/
 data/reviews/
 data/drafts/
 data/*.tmp
 *.log
+data/labeling-pilot/
+
+.env
+.env.*
+!.env.example

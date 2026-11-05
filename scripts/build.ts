@@ -1,12 +1,11 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { build } from 'vite';
-import './prepare-data.mjs';
-import { validatePublished } from './pipeline-core.mjs';
-const data = JSON.parse(await readFile('data/places.json', 'utf8'));
-validatePublished(data);
+import './prepare-data.ts';
+import { validatePublished } from './pipeline-core.ts';
+const data = validatePublished(JSON.parse(await readFile('data/places.json', 'utf8')));
 await build();
 const html = await readFile('dist/index.html', 'utf8');
-for (const path of ['places', 'saved', 'about', 'fonts', 'playgrounds', 'credits', ...data.places.map(p => `places/${p.id}`)]) {
+for (const path of ['places', 'saved', 'about', 'credits', ...data.places.map(p => `places/${p.id}`)]) {
   await mkdir(`dist/${path}`, { recursive: true });
   await writeFile(`dist/${path}/index.html`, html);
 }

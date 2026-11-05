@@ -1,27 +1,60 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Bookmark } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Bookmark } from 'lucide-react';
 import { useApp } from '../context';
-import { buttonClass, cn, textLinkClass } from '../lib';
+import { buttonClass, cn, controlClass, textLinkClass } from '../lib';
 import { Eyebrow, ExternalLink, Photo } from '../components/ui';
 import { PlaceCard } from '../components/PlaceCard';
-import { FontPreview, OrbitPreview } from '../components/CollectionPreviews';
 
 function useTitle(title:string){useEffect(()=>{document.title=`${title} — hacker.living`;},[title]);}
-const heading='my-4 font-editorial text-[54px] leading-[.99] tracking-[-1.7px] sm:text-[68px]';
+const heading='my-4 font-editorial font-medium text-[54px] leading-[.99] tracking-[-1.7px] sm:text-[68px]';
 
 export function Saved(){
   const{places,saved}=useApp();const items=places.filter(p=>saved.has(p.id));useTitle('Your saved places');
   return <><section className="pb-8 pt-12 sm:pt-16"><Eyebrow>For another day</Eyebrow><h1 className={heading}>Your next detours<span className="text-accent">.</span></h1><p className="text-xs text-muted">Good finds, kept close. Saved on this browser.</p></section><section className="min-h-[45vh]">{items.length?<><div className="flex items-center justify-between gap-4 border-y border-rule py-4"><h2 className="font-editorial text-[27px]">{items.length} {items.length===1?'place':'places'} worth keeping</h2><Link className={cn(textLinkClass,'text-[10px]')} to="/places">Keep exploring <ArrowRight className="size-3"/></Link></div><div className="mb-10 mt-5 grid border-l border-rule sm:grid-cols-2 xl:grid-cols-3 [&>article]:border-r [&>article]:border-rule">{items.map(p=><PlaceCard key={p.id} place={p}/>)}</div></>:<div className="mx-auto max-w-md px-5 py-14 text-center"><Bookmark className="mx-auto mb-5 size-9 text-accent" strokeWidth={1.2}/><h2 className="font-editorial text-[35px] leading-none">Your next detour starts here.</h2><p className="mb-6 mt-4 text-xs leading-[1.8] text-muted">Save a place that catches your eye. It’ll be waiting here when you’re ready to explore.</p><Link to="/places" className={buttonClass}>Explore places <ArrowRight className="size-3.5"/></Link></div>}</section></>;
 }
-export function ComingSoon({kind}:{kind:'fonts'|'playgrounds'}){
-  const fonts=kind==='fonts';useTitle(fonts?'Fonts — coming next':'Playgrounds — coming next');
-  return <section className="mx-auto my-12 grid min-h-[65vh] max-w-[1050px] items-center gap-12 md:my-16 md:grid-cols-[1.4fr_1fr] md:gap-16"><div><Eyebrow>{fonts?'03 / Fonts':'02 / Playgrounds'} · Coming next</Eyebrow><h1 className={heading}>{fonts?'Find your type.':'Learn by playing.'}</h1><p className="max-w-lg text-sm leading-[1.9]">{fonts?'A specimen wall of fonts recommended on Hacker News—with the context that makes each one worth trying.':'Browser simulations, visual explanations, and interactive experiments recommended on Hacker News.'}</p><p className="mt-5 text-xs leading-[1.9] text-muted">We’re starting with Places. This collection is still being gathered.</p><Link className={cn(buttonClass,'mt-7')} to="/places">Explore the places collection <ArrowRight className="size-3.5"/></Link><Link className={cn(textLinkClass,'mt-5 block')} to="/">Back to discover</Link></div><div className="mx-auto w-4/5 max-w-[370px] rotate-2 md:w-full">{fonts?<FontPreview large/>:<OrbitPreview large/>}</div></section>;
-}
 export function About(){
-  const{places}=useApp();useTitle('How we curate');
-  const sections=[['01 / Find the signal','A recommendation, not a mention.','Every published place links to a real comment that recommends it. The explanation is an editorial paraphrase; any quotation is marked and attributed.'],['02 / Go to the source','Curiosity with receipts.','Read the exact comment and the original discussion. Official website links have their own check dates, separate from the age of the recommendation.'],['03 / Keep it useful','Check before the detour.','A checked link is not a guarantee of opening hours, admission, or accessibility. Map pins indicate the building, rather than a verified accessible entrance. Always consult the official site before travelling.'],['04 / Start thoughtfully','A small collection, on purpose.',`The first collection has ${places.length} reviewed places, mostly in London, with a few discoveries further afield. New candidates are gathered into a review queue before they appear on the map.`]];
-  return <section className="mx-auto my-12 max-w-[870px] sm:my-16"><Eyebrow>A little context</Eyebrow><h1 className={heading}>Every find has a story<span className="text-accent">.</span></h1><p className="mb-5 mt-7 max-w-[700px] font-editorial text-[27px] leading-[1.4] text-[#4c4e43]">The best part of a Hacker News thread is often a passing recommendation. A tiny museum. A beautiful simulation. A font someone has used for a decade.</p><p className="max-w-[700px] text-sm leading-[1.9]">hacker.living gives those discoveries somewhere to live—with the original context intact.</p><div className="mt-9 grid gap-x-12 gap-y-8 border-t border-rule pt-9 sm:grid-cols-2">{sections.map(([label,title,copy])=><section key={label}><Eyebrow>{label}</Eyebrow><h2 className="mb-3 mt-2.5 font-editorial text-[32px] leading-none tracking-[-.4px]">{title}</h2><p className="text-xs leading-[1.9] text-muted">{copy}</p></section>)}</div><section className="mb-6 mt-9 border-t border-rule pt-7"><h2 className="mb-3 font-editorial text-[32px]">Your finds stay yours.</h2><p className="mb-3 text-xs leading-[1.9] text-muted">Saved places stay in your browser’s local storage. “Near me” asks for location only when you press it; distance calculations happen in your browser. The map loads tiles from OpenStreetMap. No account is needed.</p><p className="text-xs leading-[1.9] text-muted">This is an independent project, not affiliated with or endorsed by Hacker News or Y Combinator.</p></section><Link to="/places" className={buttonClass}>Find your next detour <ArrowRight className="size-3.5"/></Link></section>;
+  const{places}=useApp();useTitle('About the maker');
+  const profile='https://x.com/thegrandimam';
+  return <section className="mx-auto max-w-[1000px] py-10 sm:py-16">
+    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+      <div>
+        <Eyebrow>A little about the maker</Eyebrow>
+        <h1 className="mt-4 font-editorial text-[38px] font-normal leading-[1.12] tracking-[-.025em] sm:text-[52px]">Hey, I’m <a href={profile} target="_blank" rel="noopener noreferrer" className={cn(controlClass,'decoration-accent/40 underline-offset-8 hover:underline')}>grandimam</a>.</h1>
+        <p className="mt-6 max-w-[590px] text-base leading-[1.85] sm:text-lg">I’m building hacker.living to turn passing recommendations on Hacker News into places you can actually go.</p>
+        <p className="mt-4 max-w-[590px] text-sm leading-[1.9] text-muted">A tiny museum. A working observatory. A Victorian engine house that looks like a cathedral. Good threads are full of these discoveries; I wanted a map that makes them easier to find.</p>
+      </div>
+      <aside aria-label="Follow the maker" className="rounded-lg border border-rule bg-[#f2efe7] p-6 lg:mt-1">
+        <span aria-hidden="true" className="grid size-11 place-items-center rounded-[4px] bg-accent pb-1 font-editorial text-[42px] leading-none text-white">h</span>
+        <h2 className="mt-5 text-lg font-semibold tracking-[-.3px]">Follow along.</h2>
+        <p className="mt-2 text-xs leading-[1.85] text-muted">For more from the person behind hacker.living, find me on Twitter / X.</p>
+        <a href={profile} target="_blank" rel="noopener noreferrer" className={cn(buttonClass,'mt-5 w-full justify-between gap-3 text-[11px]')}>Follow grandimam <ArrowUpRight aria-hidden="true" className="size-4 shrink-0"/></a>
+      </aside>
+    </div>
+
+    <section className="mt-10 border-t border-rule pt-8 sm:mt-14">
+      <h2 className="font-editorial text-[30px] font-normal leading-tight tracking-[-.5px]">A map with a reason behind every pin.</h2>
+      <div className="mt-5 grid gap-6 sm:grid-cols-2 sm:gap-12">
+        <div><h3 className="text-sm font-semibold">The recommendation comes with it.</h3><p className="mt-2 text-xs leading-[1.9] text-muted">Every published place links to the original HN comment and discussion, with context about why someone recommended it. Any direct quote is marked and attributed.</p></div>
+        <div><h3 className="text-sm font-semibold">Small, and growing.</h3><p className="mt-2 text-xs leading-[1.9] text-muted">There are {places.length} reviewed places so far, mostly in London. New finds go through a review queue before appearing on the map, with an official website and a dated link check.</p></div>
+      </div>
+    </section>
+
+    <section className="mt-9 flex flex-col items-start justify-between gap-4 border-y border-rule py-6 sm:flex-row sm:items-center sm:gap-8">
+      <div><h2 className="text-sm font-semibold">Know a place that belongs here?</h2><p className="mt-1.5 text-xs leading-relaxed text-muted">Send me the place and, if you have it, the HN thread.</p></div>
+      <ExternalLink href={profile} className="shrink-0 text-xs font-medium">Say hello on X</ExternalLink>
+    </section>
+
+    <details className="mt-7 text-xs text-muted">
+      <summary className={cn(controlClass,'w-fit cursor-pointer hover:text-ink')}>A few practical details</summary>
+      <div className="mt-4 max-w-[700px] space-y-3 leading-[1.9]">
+        <p>A successful official-link check doesn’t guarantee opening hours, admission, or accessibility. Pins indicate buildings, rather than verified accessible entrances. Check the official site before travelling.</p>
+        <p>Saved places stay in your browser. “Near me” asks for location when you press it, and distances are calculated locally. The map loads tiles from OpenStreetMap. No account is needed.</p>
+        <p>This is an independent project, not affiliated with or endorsed by Hacker News or Y Combinator.</p>
+      </div>
+    </details>
+    <Link to="/places" className={cn(textLinkClass,'mt-8 text-xs font-medium')}>Back to the places <ArrowRight aria-hidden="true" className="size-3.5"/></Link>
+  </section>;
 }
 export function Credits(){
   const{places}=useApp();useTitle('Photo credits');
