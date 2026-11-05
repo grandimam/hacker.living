@@ -2,40 +2,214 @@
 
 # hacker.living
 
-### Good finds, shared by curious people.
+### Millions of comments. Useful discoveries. Original sources.
 
-Discover places and typefaces recommended by people on Hacker News.<br />Keep the context. Follow the original conversation.
+A community recommendation engine built with **Codex**, **Claude**,<br />a durable PostgreSQL queue, and a pipeline you can pause without starting over.
 
-[![React](https://img.shields.io/badge/React-19-25251f?style=flat-square&logo=react&logoColor=61dafb)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-25251f?style=flat-square&logo=typescript&logoColor=3178c6)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-25251f?style=flat-square&logo=tailwindcss&logoColor=06b6d4)](https://tailwindcss.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-25251f?style=flat-square&logo=postgresql&logoColor=4169e1)](https://postgis.net/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-25251f?style=flat-square&logo=docker&logoColor=2496ed)](./compose.yaml)
+[![Codex](https://img.shields.io/badge/Codex-App_Server-25251f?style=flat-square)](./scripts/codex-labeler.ts)
+[![Claude](https://img.shields.io/badge/Claude-Pi_RPC_%2B_EasyCLIProxy-e84b10?style=flat-square)](./scripts/pi-labeler.ts)
+[![DuckDB](https://img.shields.io/badge/DuckDB-Parquet-25251f?style=flat-square&logo=duckdb&logoColor=fff000)](./server/pipeline/collect.ts)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-25251f?style=flat-square&logo=postgresql&logoColor=4169e1)](./server/db/migrations/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-End_to_end-25251f?style=flat-square&logo=typescript&logoColor=3178c6)](./shared/)
 
-[Start locally](#start-locally) · [The collections](#the-collections) · [Data & provenance](#where-the-data-comes-from) · [Development](#development)
+[The pipeline](#the-pipeline) · [Codex + Claude](#two-model-runtimes-one-queue) · [Scaling](#what-happened-when-we-turned-up-the-workers) · [Run it](#run-it) · [Operations](./docs/operations.md)
 
-Built by **[grandimam](https://x.com/thegrandimam)** · [Code](https://github.com/grandimam/hacker.living) · [Feedback](https://github.com/grandimam/hacker.living/issues)
+Built by **[grandimam](https://x.com/thegrandimam)**. Discoveries by the **Hacker News community**.
 
 </div>
 
 ---
 
-HN comments contain useful recommendations that are easy to lose inside a discussion. hacker.living organizes them into browsable collections, with source links and the reason someone recommended something.
+Hacker News has years of recommendations buried in its comments: a tiny museum, a working telephone exchange, a typeface someone has used for a decade. We wanted to make those discoveries browsable while preserving why someone recommended them and where they said it.
 
-The discoveries belong to the community members who shared them. This project collects and researches their recommendations; a source count measures distinct comments, not votes or endorsement by HN.
+So we built a system that collects conversations, extracts recommendations, researches place identities, and turns the results into two collections:
 
-## The collections
+| **Places** | **Fonts** |
+| :--- | :--- |
+| Museums, observatories, libraries, engineering landmarks | Typefaces for code, terminals, reading, and design |
+| Map + list, category filters, researched locations and official links | Usage filters, recommendation context, original HN links |
+| Repeated recommendations become one matched place with a source count | Normalized family names become one card with a source count |
 
-| | Explore | What you get |
+This is the story of the pipeline behind them.
+
+## The build, in numbers
+
+| **2.06 million** | **38.9 thousand** | **239** | **$419** |
+| :---: | :---: | :---: | :---: |
+| Comments collected | Unique comments analyzed | Monthly archive files downloaded | Reported project spend |
+
+<sub>Local development snapshot: 2,058,164 collected comments and 38,925 processed comments. The downloaded archive is about 12.4 GB. Downloaded does not mean analyzed; processed does not mean recommended. The $419 is maker-reported project spend, not a token-cost calculation. Processing is currently paused.</sub>
+
+## The pipeline
+
+```mermaid
+flowchart TB
+    subgraph intake["01 · COLLECT ONCE"]
+        direction LR
+        archive["HN archive<br/>Monthly Parquet"] --> collect["DuckDB + date ranges"]
+        search["HN Search API<br/>Uncovered intervals"] --> collect
+        collect --> saved[("PostgreSQL<br/>Comments + provenance")]
+    end
+
+    subgraph extraction["02 · EXTRACT WITH TWO MODEL RUNTIMES"]
+        direction LR
+        pq["Places queue<br/>Priority + coverage"] --> codex["Codex App Server"]
+        fq["Fonts queue<br/>Signal retrieval"] --> codex
+        pq -.-> claude["Claude via Pi RPC<br/>EasyCLIProxy · optional"]
+        fq -.-> claude
+        codex --> validate["Structured labels<br/>IDs + exact-quote checks"]
+        claude -.-> validate
+    end
+
+    subgraph output["03 · RESEARCH, GROUP, DISPLAY"]
+        direction LR
+        places["Place proposals"] --> research["Codex web research<br/>Official-page check + geocoding"]
+        research --> map["Grouped Places preview"]
+        fonts["Font recommendations"] --> families["Normalized Fonts preview"]
+    end
+
+    saved --> pq
+    saved --> fq
+    validate --> places
+    validate --> fonts
+    map --> review["Separate review + approval"]
+
+    classDef model fill:#fff0e7,stroke:#e84b10,color:#25251f;
+    classDef store fill:#f1f0e8,stroke:#96978a,color:#25251f;
+    class codex,claude,research model;
+    class saved store;
+```
+
+**A saved result can advance immediately.** Location research does not wait for every comment in a month to finish labeling. Collection, extraction, and research have independent worker pools and pause controls.
+
+The dotted Claude path is implemented and optional. Its RPC preflight reached EasyCLIProxy but was blocked by an expired upstream Claude login during this build. It has not demonstrated sustained classification throughput; the completed extraction figures above are not a claim of dual-provider production throughput.
+
+### 01 — Collect the conversations once
+
+Historical comments come from [open-index/hacker-news](https://huggingface.co/datasets/open-index/hacker-news). We pin the archive revision, verify file checksums, and read monthly Parquet files with DuckDB. For intervals outside available archive coverage, collection falls back to the [HN Search API](https://hn.algolia.com/api).
+
+The date-range collector saves available live comments before classification. It is not a handful of targeted searches dressed up as an archive scan. Source coverage still depends on the archive and search index.
+
+Each saved comment retains its HN ID, author, date, text, source link, and discussion context. Collection progress is checkpointed with the saved rows, so a restart can continue from committed work.
+
+**One collection, multiple products.** Fonts scans a snapshot of comments already saved for a Places run—including comments that Places classified as software or unrelated. There is no second archive download just to build the font catalog.
+
+### 02 — Let models interpret; let code enforce the contract
+
+A model reads up to **15 comments per batch** and returns structured labels. Code checks the response before it enters the catalog:
+
+- Every input must have exactly one result. Unexpected, duplicate, and missing IDs fail validation.
+- Positive recommendations stay separate from mentions, criticism, and unclear results.
+- Low-confidence place or font identities do not become positive catalog entries.
+- Quoted text must match a contiguous source excerpt, with at most 25 quoted words per comment.
+- Reasons are paraphrases. Fonts, features, links, and preferences must not be invented.
+
+Request-local IDs such as `c1` and `c2` avoid making the model copy long database identifiers. Validated results are mapped back to the original IDs, then committed **one comment at a time** with model and usage metadata.
+
+**Places and Fonts use different retrieval strategies:** Places changes queue priority without dropping the rest of the saved comments—three batches favor recommendation signals, and every fourth continues coverage. Fonts first selects broad font/typeface/name signals, then classifies those comments. The Fonts filter is useful retrieval, not a claim of exhaustive semantic recall.
+
+### 03 — Turn “worth visiting” into a researched place
+
+An extracted name is a proposal. To put it on a map, the research stage:
+
+```text
+Re-fetch the original HN comment
+    ↓
+Codex researches the institution and official website
+    ↓
+Fetch the official page and check an identifying excerpt
+    ↓
+Query Nominatim for actual location candidates
+    ↓
+Select a matching institution; validate country and geometry
+    ↓
+Save the location, sources, dated checks, and unresolved issues
+```
+
+The model does not supply coordinates from memory. It selects from geocoder results; code rejects unsuitable matches such as streets, cities, or the wrong country. An uncertain result stays unresolved. Source changes, HTTP failures, and ambiguous identities remain inspectable.
+
+We made this stage **location-first**: new image retrieval is deferred so it does not hold up coordinates and official-link research. Existing credited photographs are preserved. A missing location does not erase the recommendation—it remains in the list without a map pin.
+
+### 04 — Group the evidence into a useful interface
+
+Repeated place recommendations are grouped before pagination using normalized researched names, city/country, and nearby coordinates. Distant branches remain separate. Font names merge conservatively by normalized case and whitespace; aliases and variants can still need review.
+
+Each card shows a compact **HN source count**. It counts distinct comments, not repeated model attempts, votes, unique people, or community consensus. Places **Top** sorts by that count; **A–Z** sorts by name.
+
+React, TypeScript, Tailwind, and Leaflet present the results. The web app reads PostgreSQL through an API, so new saved research can appear without rebuilding the frontend.
+
+## Two model runtimes. One queue.
+
+| | **Codex** | **Claude** |
 | :--- | :--- | :--- |
-| **Places** | Small museums, observatories, unusual libraries, engineering landmarks | A map and list, category filters, official links where identified, and one card per matched place with an HN source count |
-| **Fonts** | Typefaces recommended for coding, terminals, reading, and design | A filterable catalog with recommendation context, a source count, and a link to the original HN comment |
+| Connection | Existing authenticated App Server over a local Unix WebSocket | Pi RPC processes through the existing EasyCLIProxy provider |
+| Role | Comment classification and separate place web research | Additional Places/Fonts classification capacity |
+| Session | Isolated, ephemeral threads | Fresh in-memory session per classification request |
+| Tools | Classification uses no tools; research permits web search | Classification runs without tools or project context |
+| Model | Runtime-selected model ID is recorded with each result | `claude-sonnet-4-6` by default; configurable |
+| Admission | Adaptive model-call limit and provider cooldown | Authentication preflight before claiming real jobs |
 
-**Current status:** browsable research previews. Place matches can need correction. Font names use the site’s typography; font files, licenses, official links, and specimens await verification. Missing locations stay visible without map pins. Existing credited photographs are retained; new image research is deferred.
+There are no model API keys in the repository. The adapters use existing local authenticated runtimes. Claude goes through **EasyCLIProxy**, not OpenRouter. Provider account limits and authentication still apply.
 
-## Start locally
+Both paths use the same label validators and durable job table. They compete for atomic leases instead of independently reading and labeling the same backlog. Pi has its own worker identities, so restarting a Codex worker does not reclaim Pi’s active jobs.
 
-With Docker Desktop or Docker Engine + Compose running:
+Browse the implementation: [Codex adapter](./scripts/codex-labeler.ts) · [Pi adapter](./scripts/pi-labeler.ts) · [Claude pool](./server/pipeline/pi-pool.ts) · [Batch claims](./server/pipeline/claim-labels.ts)
+
+## What happened when we turned up the workers
+
+We moved from small worker pools to **100 Places label workers**, **100 Fonts label workers**, and an optional **100-slot Claude pool shared across both products**. These are queue capacities, not measured simultaneous model calls.
+
+Simply increasing worker counts exposed two bottlenecks: database claim contention and shared model-server overload. We addressed them separately.
+
+| Bottleneck | What we changed |
+| :--- | :--- |
+| Many workers competing for the same rows | Reserve a batch atomically with `FOR UPDATE SKIP LOCKED` |
+| Repeated database round trips | Fetch all batch inputs in one query; keep model calls outside DB transactions |
+| One slow stage holding up downstream results | Independent stage pools; admit research as soon as a proposal is saved |
+| Bursts overwhelming Codex | Start at 8 model calls per process, grow gradually after successes, halve admission on overload |
+| Explicit provider limits | Defer jobs with a shared five-minute provider cooldown and refund the failed admission attempt |
+| A broken Claude login claiming useful work | Require one successful RPC preflight before opening the pool |
+
+The database pool is bounded separately from worker capacity. More workers do not require one held database connection per model call. The implemented admission gate increases its limit by one after every 32 successful calls, up to its configured maximum.
+
+**We do not claim a measured comments-per-second rate or a full-archive completion time.** Throughput depends on the provider, comment length, web research, external services, and retries.
+
+## A flow you can stop without losing your place
+
+```text
+COLLECT  ──[gate]──▶  LABEL  ──[gate]──▶  RESEARCH  ──▶  PREVIEW
+   │                    │                   │
+checkpoint          atomic saves        saved evidence
+   │                    │                   │
+resume later        independent queue    retry unresolved work
+```
+
+Closing one gate holds its pending inputs while other open stages drain saved work. An in-flight atomic unit finishes before pausing. An incomplete collection remains incomplete; draining its downstream queue does not mean the entire date range was collected.
+
+Underneath, the system uses:
+
+- **Leases and fencing tokens** so stale workers cannot commit after losing ownership.
+- **Run locks and versioned inputs** to avoid overlapping executions and reuse saved results.
+- **Bounded retries and explicit failures** instead of silently dropping difficult records.
+- **Cached research and HTTP responses** to avoid repeating recent external requests unnecessarily.
+- **Separate product state** so font extraction does not overwrite Places decisions.
+
+This is resumable, explicitly started processing. No recurring ingestion schedule is configured, and starting the website does not start the workers. Pipeline controls remain in the backend; the product UI shows simple database-backed metrics.
+
+## Evidence is a separate layer from approval
+
+| Layer | What it means |
+| :--- | :--- |
+| **Saved comment** | Source material, not a recommendation |
+| **Model label** | An interpretation that passed structural validation |
+| **Research preview** | A browsable draft with available evidence and unresolved details |
+| **Approved place** | A separately reviewed record that passed publication gates |
+
+`/api/discoveries` serves Places previews. `/api/fonts` serves draft font recommendations. `/api/places` serves the separately approved catalog. Putting something on the preview map does not promote it into the approved catalog.
+
+Authors, dates, exact source URLs, research sources, and link-check dates stay with the evidence. Font licenses, files, official links, and specimen rendering still await verification. A successful official-link check does not guarantee current opening hours or accessibility.
+
+## Run it
 
 ```sh
 git clone https://github.com/grandimam/hacker.living.git
@@ -43,214 +217,68 @@ cd hacker.living
 docker compose up --build -d --wait
 ```
 
-**Open [localhost:4317](http://localhost:4317).**
+Open **[localhost:4317](http://localhost:4317)**. Compose starts PostgreSQL/PostGIS, applies migrations, and serves the production app. A fresh checkout starts with an empty database; local datasets, credentials, and archives are excluded from Git and the image. Existing database volumes are reused.
 
-Compose builds the frontend, starts PostgreSQL/PostGIS, waits for the database, applies pending migrations, and serves the app. Starting the site does **not** start model workers or resume processing.
-
-> **Bring your own data.** A fresh installation has an empty catalog. Datasets, research results, credentials, and database backups are excluded from Git and the Docker image. An existing local `hacker-living_postgres_data` volume is reused.
-
-| Task | Command |
-| :--- | :--- |
-| View startup logs | `docker compose logs -f app` |
-| Check service health | `docker compose ps` |
-| Stop without deleting data | `docker compose stop` |
-| Start again | `docker compose up -d --wait` |
-| Rebuild after a code update | `docker compose up --build -d --wait` |
-
-**Port already in use?** Run `APP_PORT=4318 docker compose up --build -d --wait` and open [localhost:4318](http://localhost:4318). Set `APP_PORT` in your ignored `.env` to keep that choice.
-
-<details>
-<summary><strong>Credentials and persistence</strong></summary>
-
-Compose uses `POSTGRES_PASSWORD` from `.env` when supplied. Without it, the local development password is `hacker-living-local`. For a new setup, `npm run db:setup` generates random credentials; an existing `.env` is retained. Keep credentials consistent when reusing a database volume.
-
-By default, the app and database ports bind to localhost. The optional public profile publishes only Caddy on ports 80/443. The app runs as an unprivileged user. Database files live in the named Docker volume, independently of the containers. Stopping, rebuilding, or recreating containers preserves that volume; removing it deletes the database.
-
-</details>
-
-## Where the data comes from
-
-Public comments come from the [open-index Hacker News archive](https://huggingface.co/datasets/open-index/hacker-news), with the [HN Search API](https://hn.algolia.com/api) used for intervals outside available archive coverage.
-
-```mermaid
-flowchart LR
-    A[HN archive + Search API] --> B[Saved comments]
-    B --> C[Place recommendation extraction]
-    B --> D[Font signal retrieval + extraction]
-    C --> E[Location + official-link research]
-    E --> F[Places research preview]
-    D --> G[Fonts research preview]
-    F --> H[Separate review and approval]
-```
-
-### Source → recommendation → research
-
-1. **Collect and save.** Comments and provenance are stored in PostgreSQL. Archive files remain local Parquet files, read with DuckDB. Collection checkpoints make interrupted work resumable.
-2. **Extract recommendations.** AI distinguishes positive recommendations from mentions, criticism, and unrelated material. Places prioritizes likely recommendations while continuing broad coverage. Fonts retrieves comments containing font-related signals before classification; that retrieval is not exhaustive.
-3. **Research place identities.** The system looks for an official site and coordinates, records dated link checks, and retains unresolved results. It does not invent coordinates or replace missing photos with generated imagery.
-4. **Group and display.** Matching researched place names in the same city and nearby location share one card. Distant branches remain separate. Font names merge conservatively by case and whitespace. Source badges count distinct HN comments.
-5. **Review separately.** Displaying a research preview does not approve it for the verified catalog. Publication requires explicit review and evidence checks.
-
-Original authors, dates, source links, and extracted evidence stay in the database. Summaries are paraphrases; quotations are validated against source text. A working official URL does not establish opening hours or accessibility.
-
-### What the metrics mean
-
-| Metric | Meaning |
-| :--- | :--- |
-| **Collected** | Distinct saved comments associated with collection runs |
-| **Processed** | Distinct saved comments analyzed for Places or Fonts; a comment can yield no recommendation |
-| **Processing now** | Active, unexpired processing job leases |
-| **Cost so far** | Maker-reported project spend: **$419**, not an automatic billing integration |
-
-Counts update from PostgreSQL. Archive coverage, HN indexing, extraction accuracy, and entity matching all have limits; this is not a complete index of every HN recommendation.
-
-## Development
-
-Use **Node.js 22.12+** and Docker for frontend/backend development:
-
-```sh
-npm ci
-npm run db:setup
-npm run db:up
-npm run db:migrate
-npm run dev
-```
-
-Open [localhost:4317](http://localhost:4317). If the Compose app is using that port, run `docker compose stop app` first. Vite serves React and the local API; PostgreSQL remains the source of truth.
-
-```sh
-npm run check          # Strict TypeScript and optional export validation
-npm test               # Unit and behavior tests
-npm run test:database   # PostGIS integration tests; requires the local DB
-npm run build          # Production frontend; no dataset required
-```
-
-### Project layout
-
-```text
-src/                 React pages and Tailwind components
-shared/              Types, filtering, and validation contracts
-server/
-  db/                Catalog queries, jobs, and SQL migrations
-  fonts/             Font retrieval, extraction, and catalog
-  pipeline/          Collection, labeling, research, and controls
-scripts/             Local commands, build, and container startup
-tests/               Behavior tests and small test-only fixtures
-compose.yaml         App + persistent PostgreSQL/PostGIS
-Dockerfile           Production app image
-```
-
-### Storage and API
-
-| Data | Storage |
-| :--- | :--- |
-| Comments, labels, proposals, and font recommendations | PostgreSQL |
-| Coordinates and geographic queries | PostGIS |
-| Runs, leases, retries, checkpoints, and research checks | PostgreSQL |
-| Raw archive, logs, exports, and backups | Ignored local `data/` |
-| Small reproducible test examples | `tests/fixtures/`; never product seeds |
-
-| Endpoint | Purpose |
-| :--- | :--- |
-| `GET /api/health` | Database connectivity |
-| `GET /api/discoveries` | Grouped place research previews |
-| `GET /api/fonts` | Draft font families and recommendation evidence |
-| `GET /api/metrics` | Collection, processing, and reported cost |
-| `GET /api/places` | Separately approved places only |
-
-## Run processing explicitly
-
-Processing runs on the host using the existing authenticated **Codex app server**. Browsing the site needs no model login. The Docker app does not contain model credentials or start background workers automatically.
-
-```sh
-# Collect a date range and process Places
-npm run pipeline:run -- --from 2026-08-01 --to 2026-08-21
-
-# Continue an existing run, respecting its saved stage controls
-npm run pipeline:run -- --run <places-run-id>
-
-# Extract Fonts from comments already saved by a Places run
-npm run pipeline:fonts -- run --source-run <places-run-id> --workers 8
-npm run pipeline:fonts -- status --run <font-run-id>
-npm run pipeline:fonts -- pause --run <font-run-id>
-```
-
-Calendar dates include both days in **UTC**; explicit timestamp ranges use an exclusive end. Large ranges can involve many model requests. Saved stage controls allow collection, labeling, and research to pause independently; in-flight atomic units finish before a pause takes effect. Pipeline screens are hidden from product navigation.
-
-Jobs use database leases, fencing tokens, bounded retries, and atomic saves. Worker limits are capacity ceilings; actual model concurrency adapts to provider limits. Failures remain available for inspection and retry. No recurring collection schedule is configured.
-
-<details>
-<summary><strong>Optional: Claude through Pi RPC + EasyCLIProxy</strong></summary>
-
-An additional labeling pool can share the durable queue with Codex:
-
-```sh
-npm run pipeline:pi -- --places-run <places-run-id> --font-run <font-run-id> --workers 100
-```
-
-This selects the existing `cliproxyapi` provider through EasyCLIProxy, with `claude-sonnet-4-6` by default. It does not use OpenRouter. Configure `PI_BIN` and optionally `PI_CLAUDE_MODEL` in `.env`.
-
-The pool must pass an authentication preflight before claiming real work. An unavailable provider remains blocked and retries preflight every minute. Model credentials stay outside the project. Pi labels comments; place location and link research remains a separate stage.
-
-</details>
-
-<details>
-<summary><strong>Review, publication, and backup</strong></summary>
-
-```sh
-npm run pipeline:review
-npm run pipeline:draft -- --proposal <proposal-id> --out data/drafts/place.json
-npm run pipeline:approve -- --file data/drafts/place.json --reviewer "Your name"
-npm run pipeline:verify
-npm run db:backup
-```
-
-Inspect source evidence and verify the place and recommendation before setting review flags. `/api/places` serves only approved records that satisfy the publication gates. A later failed evidence or official-link check can hide a published record.
-
-`npm run db:export` creates an optional local JSON export. Builds and the running app do not require that file. Archive downloads and backups also stay outside Git.
-
-</details>
-
-## A single-server launch
-
-On an x86-64 AWS instance running Ubuntu 22.04/24.04/26.04/26.10 or Amazon Linux 2023, copy or clone this checkout, then run:
+On an x86-64 Ubuntu or Amazon Linux 2023 AWS instance, prepare the machine first:
 
 ```sh
 sudo bash scripts/setup-aws.sh --domain hacker.living
-```
-
-The script installs Docker Engine, Compose, Buildx, Git, and utilities; enables Docker at boot; creates a random database password if `.env` is missing; and enables the optional Caddy HTTPS service. Existing credentials and database volumes are retained. It adds the invoking login user to the Docker group, which grants host administration through Docker. Node.js and npm are not needed on the server.
-
-Reconnect SSH once for group membership, then start the site yourself:
-
-```sh
-cd hacker.living
+# Reconnect SSH, then:
 docker compose up --build -d --wait
 ```
 
-Point `hacker.living` at the instance and allow inbound TCP **80 and 443** in its AWS security group. Caddy obtains and renews HTTPS certificates once DNS resolves. App and database ports stay bound to localhost. The script does not alter DNS, AWS security groups, or start workers. HTTPS is not ready until certificate issuance succeeds; inspect `docker compose logs -f caddy`.
+The installer configures Docker and the optional Caddy HTTPS service. Point DNS at the instance and allow inbound TCP 80/443. It does not transfer your local catalog or start model workers.
 
-For a different hostname, pass `--domain your-domain.com` on first setup, or edit `SITE_ADDRESS` in `.env` afterward. The script preserves existing settings on repeat runs. Installation follows the [Docker Ubuntu repository instructions](https://docs.docker.com/engine/install/ubuntu/), [AWS Amazon Linux instructions](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html), and [Docker plugin installation guidance](https://docs.docker.com/compose/install/linux/). An existing database volume without `.env` requires restoring the matching credentials, rather than generating a replacement password.
+**[Read the operations guide →](./docs/operations.md)** for development, supported OS versions, credentials, backups, port changes, API routes, and deployment details.
 
-The initial deployment can run the app and PostgreSQL together with Compose. Use an **x86-64 Linux** server to match the pinned PostGIS image. The AWS setup enables the included Caddy proxy and generates credentials for a fresh database. Outside that setup, the default Compose configuration serves only localhost.
+### Start the pipeline explicitly
 
-Keep database backups off the instance and test restoring them. Provisioning AWS, configuring DNS/TLS, and transferring your local database are separate deployment steps; cloning this repository does not copy your catalog.
+These commands run on the host with Node.js, the database, and the authenticated model runtime available:
 
-## Credit where it belongs
+```sh
+# Collect and process Places over an inclusive UTC date range
+npm run pipeline:run -- --from 2026-08-01 --to 2026-08-21
 
-- **Recommendations:** individual Hacker News contributors. Original source links remain attached to the evidence.
-- **Archive:** [open-index/hacker-news](https://huggingface.co/datasets/open-index/hacker-news).
-- **Search:** [HN Search by Algolia](https://hn.algolia.com/).
-- **Maps and geocoding:** [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Review tile-service requirements before sustained public traffic.
-- **Photos:** author, source, license, and modification details are retained where images are available; see `/credits`.
-- **Inspiration:** [HackerTV](https://github.com/dsalzman/hackertv) and its archive-plus-incremental approach.
+# Reuse saved comments to extract Fonts
+npm run pipeline:fonts -- run --source-run <places-run-id> --workers 8
+
+# Add the optional Claude pool alongside Codex
+npm run pipeline:pi -- --places-run <places-run-id> --font-run <font-run-id> --workers 100
+```
+
+### Find the interesting parts
+
+| Read this | To understand |
+| :--- | :--- |
+| [`collect.ts`](./server/pipeline/collect.ts) | Archive reading, Search API fallback, checkpoints |
+| [`label.ts`](./server/pipeline/label.ts) | Batched extraction and per-comment commits |
+| [`claim-labels.ts`](./server/pipeline/claim-labels.ts) | Atomic queue claims across competing workers |
+| [`worker-pool.ts`](./server/pipeline/worker-pool.ts) | Independent stage admission and draining |
+| [`model-admission.ts`](./scripts/model-admission.ts) | Adaptive model concurrency and overload response |
+| [`enrich.ts`](./server/pipeline/enrich.ts) | Place research, official-page checks, and coordinate selection |
+| [`fonts/`](./server/fonts/) | Reusing comments for a separate product |
+| [`discovery.ts`](./server/db/discovery.ts) | Place grouping, source counts, and pagination |
+| [`migrations/`](./server/db/migrations/) | The durable data model |
+
+```sh
+npm run check          # TypeScript + optional export validation
+npm test               # Unit and behavior tests
+npm run test:database   # PostGIS integration tests
+npm run build          # Build without shipping a dataset
+```
+
+## Built on the community
+
+The recommendations come from individual Hacker News contributors. [open-index](https://huggingface.co/datasets/open-index/hacker-news) supplies the historical archive; [HN Search by Algolia](https://hn.algolia.com/) supplies indexed search. [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) supply map and geocoding data. Available photographs retain their individual attribution and license details.
+
+[HackerTV](https://github.com/dsalzman/hackertv) inspired the archive-plus-incremental approach. Our implementation extends the idea into separate extraction and research stages, a shared worker queue, and multiple discovery collections.
 
 ---
 
 <div align="center">
 
-Built by **[grandimam](https://x.com/thegrandimam)**.<br />Have a correction or a recommendation? [Open an issue](https://github.com/grandimam/hacker.living/issues).
+**Built by [grandimam](https://x.com/thegrandimam).**<br />Follow the build, [read the code](https://github.com/grandimam/hacker.living), or [suggest a correction](https://github.com/grandimam/hacker.living/issues).
 
-Independent of Hacker News and Y Combinator. Recommendations express their authors’ opinions.
+Independent of Hacker News and Y Combinator. Source counts are evidence counts, not endorsements.
 
 </div>
