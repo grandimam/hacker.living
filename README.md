@@ -1,46 +1,38 @@
 <div align="center">
 
-<h1><img src="./docs/assets/hacker-living.svg" alt="hacker.living" width="640" /></h1>
+<h1><img src="./docs/assets/hacker-living.svg" alt="hacker.living" width="460" /></h1>
 
-### Places worth visiting. Typefaces worth trying.
+**Coding agents turning conversations into discoveries.**
 
-Recommendations from people on Hacker News,<br />with the context and original conversations that make them useful.
-
-**[Try it locally](#run-it)** · [See the collections](#find-the-recommendation-you-would-have-missed) · [How we built it](#the-pipeline)
-
-<sub>Built by <a href="https://x.com/thegrandimam">grandimam</a>. Discoveries by the Hacker News community. Research previews; details can need correction.</sub>
+[Explore the live site ↗](https://hacker.living) · [Inside the pipeline](#inside-the-pipeline) · [Run it yourself](#run-it)
 
 </div>
 
+<a href="https://hacker.living">
+  <img src="./docs/assets/pipeline.gif" alt="Animated pipeline: Hacker News conversations flow to Codex workers for extraction and place research, then through validation into PostgreSQL and a live catalog of places and fonts. Claude is an optional classification adapter. Source credit stays attached; results are draft previews." width="1200" />
+</a>
+
+<p align="center"><sub>Illustrated workflow · <a href="./docs/assets/pipeline-poster.png">View the still image</a> · <a href="./docs/animation.md">Animation source</a></sub></p>
+
+A place you would never have searched for. A typeface someone swears by. **Explore recommendations from Hacker News, with the people and conversations behind them.**
+
+Built with Claude and Codex. The pipeline also uses coding-agent runtimes as data workers: extract a recommendation, research a place, save the evidence, and make the result available on the site.
+
 <p align="center">
-  <img src="./docs/assets/product-overview.svg" alt="Places: a map and original sources for unusual destinations. Fonts: recommendations organized by use, with their HN source counts." width="1200" />
+  <b>2.06M</b> comments collected &nbsp; / &nbsp; <b>38.9K</b> analyzed &nbsp; / &nbsp; <b>2</b> collections
+  <br /><sub>Development snapshot. Places and Fonts are research previews; processing runs explicitly.</sub>
 </p>
 
-## Find the recommendation you would have missed
+## Inside the pipeline
 
-A tiny museum in a comment thread. An unusual library. A typeface someone has used for years. hacker.living makes those recommendations browsable, with a link back to the person who shared them.
+**Collect once. Research incrementally. Resume from saved work.**
 
-| **Find a place** | **Find a typeface** |
-| :--- | :--- |
-| Explore museums, observatories, libraries, and engineering landmarks on a map. | Browse fonts for code, terminals, reading, interfaces, and design. |
-| See why someone recommended it, with researched locations and official links where available. | Understand why someone prefers it, with recommendation context and the original HN source. |
-| One card per matched place. Source counts bring repeated recommendations together. | One card per normalized family. A source count keeps the evidence visible without a wall of comments. |
+[Model adapters](./scripts/codex-labeler.ts) · [Evidence validation](./scripts/labeling-core.ts) · [Durable queues](./server/pipeline/claim-labels.ts) · [Place research](./server/pipeline/enrich.ts)
 
-**Keep the context.** Source counts measure distinct HN comments, not votes or an endorsement by the whole community. Current entries are research previews. Font specimens and licenses still await verification; places without a location remain in the list.
+<details>
+<summary><b>Open the build notes — models, evidence, queues, and scaling</b></summary>
 
----
-
-## How we built a recommendation engine from HN comments
-
-The interface is the result. Underneath it is a resumable data pipeline: collect the conversations once, extract recommendations with **Codex** and an optional **Claude** runtime, research place identities, and publish a catalog with its evidence attached.
-
-[![Codex](https://img.shields.io/badge/Codex-App_Server-25251f?style=flat-square)](./scripts/codex-labeler.ts)
-[![Claude](https://img.shields.io/badge/Claude-Pi_RPC_%2B_EasyCLIProxy-e84b10?style=flat-square)](./scripts/pi-labeler.ts)
-[![DuckDB](https://img.shields.io/badge/DuckDB-Parquet-25251f?style=flat-square&logo=duckdb&logoColor=fff000)](./server/pipeline/collect.ts)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-25251f?style=flat-square&logo=postgresql&logoColor=4169e1)](./server/db/migrations/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-End_to_end-25251f?style=flat-square&logo=typescript&logoColor=3178c6)](./shared/)
-
-[The pipeline](#the-pipeline) · [Codex + Claude](#two-model-runtimes-one-queue) · [Scaling](#what-happened-when-we-turned-up-the-workers) · [Operations](./docs/operations.md)
+Codex performed the recorded extraction work and handles place web research. The optional [Claude adapter](./scripts/pi-labeler.ts) shares the classification queue through Pi RPC and EasyCLIProxy; an expired upstream login prevented sustained Claude throughput during this build.
 
 ## The build, in numbers
 
@@ -92,7 +84,7 @@ flowchart TB
 
 **A saved result can advance immediately.** Location research does not wait for every comment in a month to finish labeling. Collection, extraction, and research have independent worker pools and pause controls.
 
-The dotted Claude path is implemented and optional. Its RPC preflight reached EasyCLIProxy but was blocked by an expired upstream Claude login during this build. It has not demonstrated sustained classification throughput; the completed extraction figures above are not a claim of dual-provider production throughput.
+The dotted path is the optional Claude classifier. Place web research uses Codex; the runtime comparison below explains their different capabilities.
 
 ### 01 — Collect the conversations once
 
@@ -219,6 +211,9 @@ This is resumable, explicitly started processing. No recurring ingestion schedul
 
 Authors, dates, exact source URLs, research sources, and link-check dates stay with the evidence. Font licenses, files, official links, and specimen rendering still await verification. A successful official-link check does not guarantee current opening hours or accessibility.
 
+
+</details>
+
 ## Run it
 
 ```sh
@@ -229,6 +224,9 @@ docker compose up --build -d --wait
 ```
 
 Open **[localhost:4317](http://localhost:4317)**. Compose starts PostgreSQL/PostGIS, applies migrations, and serves the production app. A fresh checkout starts with an empty database; local datasets, credentials, and archives are excluded from Git and the image. Existing database volumes are reused.
+
+<details>
+<summary><b>Deployment, pipeline commands, and source tour</b></summary>
 
 On an x86-64 Ubuntu or Amazon Linux 2023 AWS instance, prepare the machine first:
 
@@ -279,6 +277,12 @@ npm test               # Unit and behavior tests
 npm run test:database   # PostGIS integration tests
 npm run build          # Build without shipping a dataset
 ```
+
+</details>
+
+## Make it better
+
+[Suggest a correction](https://github.com/grandimam/hacker.living/issues) with the original HN source, propose the next collection, or explore the pipeline code. Star the repository to follow its progress.
 
 ## Built on the community
 
