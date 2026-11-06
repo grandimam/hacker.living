@@ -2,9 +2,37 @@
 
 <h1><img src="./docs/assets/hacker-living.svg" alt="hacker.living" width="640" /></h1>
 
-### Millions of comments. Useful discoveries. Original sources.
+### Places worth visiting. Typefaces worth trying.
 
-A community recommendation engine built with **Codex**, **Claude**,<br />a durable PostgreSQL queue, and a pipeline you can pause without starting over.
+Recommendations from people on Hacker News,<br />with the context and original conversations that make them useful.
+
+**[Try it locally](#run-it)** · [See the collections](#find-the-recommendation-you-would-have-missed) · [How we built it](#the-pipeline)
+
+<sub>Built by <a href="https://x.com/thegrandimam">grandimam</a>. Discoveries by the Hacker News community. Research previews; details can need correction.</sub>
+
+</div>
+
+<p align="center">
+  <img src="./docs/assets/product-overview.svg" alt="Places: a map and original sources for unusual destinations. Fonts: recommendations organized by use, with their HN source counts." width="1200" />
+</p>
+
+## Find the recommendation you would have missed
+
+A tiny museum in a comment thread. An unusual library. A typeface someone has used for years. hacker.living makes those recommendations browsable, with a link back to the person who shared them.
+
+| **Find a place** | **Find a typeface** |
+| :--- | :--- |
+| Explore museums, observatories, libraries, and engineering landmarks on a map. | Browse fonts for code, terminals, reading, interfaces, and design. |
+| See why someone recommended it, with researched locations and official links where available. | Understand why someone prefers it, with recommendation context and the original HN source. |
+| One card per matched place. Source counts bring repeated recommendations together. | One card per normalized family. A source count keeps the evidence visible without a wall of comments. |
+
+**Keep the context.** Source counts measure distinct HN comments, not votes or an endorsement by the whole community. Current entries are research previews. Font specimens and licenses still await verification; places without a location remain in the list.
+
+---
+
+## How we built a recommendation engine from HN comments
+
+The interface is the result. Underneath it is a resumable data pipeline: collect the conversations once, extract recommendations with **Codex** and an optional **Claude** runtime, research place identities, and publish a catalog with its evidence attached.
 
 [![Codex](https://img.shields.io/badge/Codex-App_Server-25251f?style=flat-square)](./scripts/codex-labeler.ts)
 [![Claude](https://img.shields.io/badge/Claude-Pi_RPC_%2B_EasyCLIProxy-e84b10?style=flat-square)](./scripts/pi-labeler.ts)
@@ -12,25 +40,7 @@ A community recommendation engine built with **Codex**, **Claude**,<br />a durab
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-25251f?style=flat-square&logo=postgresql&logoColor=4169e1)](./server/db/migrations/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-End_to_end-25251f?style=flat-square&logo=typescript&logoColor=3178c6)](./shared/)
 
-[The pipeline](#the-pipeline) · [Codex + Claude](#two-model-runtimes-one-queue) · [Scaling](#what-happened-when-we-turned-up-the-workers) · [Run it](#run-it) · [Operations](./docs/operations.md)
-
-Built by **[grandimam](https://x.com/thegrandimam)**. Discoveries by the **Hacker News community**.
-
-</div>
-
----
-
-Hacker News has years of recommendations buried in its comments: a tiny museum, a working telephone exchange, a typeface someone has used for a decade. We wanted to make those discoveries browsable while preserving why someone recommended them and where they said it.
-
-So we built a system that collects conversations, extracts recommendations, researches place identities, and turns the results into two collections:
-
-| **Places** | **Fonts** |
-| :--- | :--- |
-| Museums, observatories, libraries, engineering landmarks | Typefaces for code, terminals, reading, and design |
-| Map + list, category filters, researched locations and official links | Usage filters, recommendation context, original HN links |
-| Repeated recommendations become one matched place with a source count | Normalized family names become one card with a source count |
-
-This is the story of the pipeline behind them.
+[The pipeline](#the-pipeline) · [Codex + Claude](#two-model-runtimes-one-queue) · [Scaling](#what-happened-when-we-turned-up-the-workers) · [Operations](./docs/operations.md)
 
 ## The build, in numbers
 
@@ -214,6 +224,7 @@ Authors, dates, exact source URLs, research sources, and link-check dates stay w
 ```sh
 git clone https://github.com/grandimam/hacker.living.git
 cd hacker.living
+bash scripts/setup-env.sh
 docker compose up --build -d --wait
 ```
 
@@ -284,3 +295,7 @@ The recommendations come from individual Hacker News contributors. [open-index](
 Independent of Hacker News and Y Combinator. Source counts are evidence counts, not endorsements.
 
 </div>
+
+## License
+
+The project code is [MIT licensed](./LICENSE). HN source content, the source archive, OpenStreetMap data, and bundled photographs have separate rights and terms. See [Third-party notices](./THIRD_PARTY_NOTICES.md). See [Security](./SECURITY.md) for reporting and the deployment boundary.

@@ -24,7 +24,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hacker-living-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run bash scripts/setup-env.sh or scripts/setup-aws.sh first}
+      PIPELINE_ADMIN_ENABLED: "false"
       DATABASE_HOST: db
       HOST: 0.0.0.0
       PORT: 4317
@@ -43,7 +44,7 @@ services:
     environment:
       POSTGRES_DB: hacker_living
       POSTGRES_USER: hacker_living
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hacker-living-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run bash scripts/setup-env.sh or scripts/setup-aws.sh first}
     ports:
       - "127.0.0.1:${DATABASE_PORT:-55432}:5432"
     volumes:

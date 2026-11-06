@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="590" viewBox="0 0 1280 590" role="img" aria-labelledby="title desc">
+<title id="title">Explore Places and Fonts on hacker.living</title>
+<desc id="desc">Illustrated product overview: a map and original Hacker News sources for unusual places, alongside typeface recommendations organized by use. Counts are examples from a local catalog snapshot.</desc>
+
+<rect x="1" y="1" width="1278" height="588" rx="20" fill="#faf8f3" stroke="#d6d3c9"/>
+<g font-family="Arial,Helvetica,sans-serif" fill="#25251f">
+ <text x="36" y="46" font-size="12" font-weight="700" fill="#e84b10" letter-spacing="1.4">FROM THE HACKER NEWS COMMUNITY</text>
+ <text x="36" y="88" font-family="Georgia,serif" font-size="32">Discover something worth your time.</text>
+ <text x="36" y="119" font-size="15" fill="#77766d">The place. The typeface. The reason someone shared it.</text>
+ <rect x="28" y="153" width="744" height="367" rx="12" fill="#fffdf9" stroke="#d6d3c9"/>
+ <text x="48" y="187" font-size="19" font-weight="700">Places</text>
+ <text x="48" y="211" font-size="13" fill="#77766d">Find a museum you would never have searched for.</text>
+ <path d="M29 231H771" stroke="#d6d3c9"/>
+ <rect x="48" y="250" width="306" height="113" rx="7" fill="#fff0e7"/>
+ <text x="62" y="275" font-size="15" font-weight="700">Computer History Museum</text>
+ <text x="62" y="297" font-size="12" fill="#77766d">Mountain View, United States</text>
+ <rect x="62" y="313" width="103" height="24" rx="12" fill="#e84b10"/>
+ <text x="73" y="329" font-size="11" font-weight="700" fill="white">12 HN sources</text>
+ <text x="62" y="351" font-size="11" fill="#a63b13">HN source ↗   ·   Official website ↗</text>
+ <text x="62" y="398" font-size="15" font-weight="700">Connections Museum Seattle</text>
+ <text x="62" y="421" font-size="12" fill="#77766d">Seattle, United States</text>
+ <text x="62" y="448" font-size="11" fill="#a63b13">4 HN sources · Original discussion ↗</text>
+ <text x="62" y="489" font-size="11" fill="#77766d">One place. Multiple sources. Context preserved.</text>
+ <rect x="374" y="248" width="377" height="250" rx="8" fill="#e4e9df"/>
+ <path d="M412 248V498M450 248V498M488 248V498M526 248V498M564 248V498M602 248V498M640 248V498M678 248V498M716 248V498M374 286H751M374 324H751M374 362H751M374 400H751M374 438H751M374 476H751" fill="none" stroke="#d5d9cc" stroke-width="1"/>
+ <path d="M426 248C490 279 437 314 486 333S521 384 490 407 517 461 471 498H751V248Z" fill="#d5e1df"/>
+ <path d="M397 274L718 459M393 451L725 290M419 248L639 498M374 358L751 380" stroke="#f8f7ef" stroke-width="7" fill="none"/>
+ <path d="M405 324C475 299 502 372 553 349S646 309 715 326" stroke="#faf8f3" stroke-width="6" fill="none"/>
+ <g fill="#e84b10" stroke="#fffdf9" stroke-width="3"><circle cx="453" cy="307" r="10"/><circle cx="544" cy="384" r="12"/><circle cx="665" cy="338" r="9"/></g>
+ <rect x="389" y="466" width="118" height="21" rx="4" fill="#fffdf9"/>
+ <text x="400" y="480" font-size="10" fill="#77766d">Illustrated map view</text>
+ <rect x="792" y="153" width="460" height="367" rx="12" fill="#fffdf9" stroke="#d6d3c9"/>
+ <text x="812" y="187" font-size="19" font-weight="700">Fonts</text>
+ <text x="812" y="211" font-size="13" fill="#77766d">Find out why someone keeps using a typeface.</text>
+ <path d="M793 231H1251" stroke="#d6d3c9"/>
+ <text x="814" y="265" font-size="12" font-weight="700" fill="#e84b10">Code</text>
+ <text x="865" y="265" font-size="12" fill="#77766d">Terminal</text>
+ <text x="940" y="265" font-size="12" fill="#77766d">Reading</text>
+ <rect x="812" y="285" width="420" height="88" rx="7" fill="#faf8f3" stroke="#d6d3c9"/>
+ <text x="828" y="317" font-size="22" font-weight="700">Iosevka</text>
+ <rect x="1105" y="301" width="111" height="25" rx="12" fill="#fff0e7"/>
+ <circle cx="1118" cy="313" r="3" fill="#e84b10"/>
+ <text x="1128" y="318" font-size="11" fill="#a63b13">23 HN sources</text>
+ <text x="828" y="349" font-size="11" fill="#77766d">Recommendation context · Original HN source ↗</text>
+ <rect x="812" y="387" width="420" height="88" rx="7" fill="#faf8f3" stroke="#d6d3c9"/>
+ <text x="828" y="419" font-size="22" font-weight="700">JetBrains Mono</text>
+ <rect x="1105" y="403" width="111" height="25" rx="12" fill="#fff0e7"/>
+ <circle cx="1118" cy="415" r="3" fill="#e84b10"/>
+ <text x="1128" y="420" font-size="11" fill="#a63b13">17 HN sources</text>
+ <text x="828" y="451" font-size="11" fill="#77766d">Recommendation context · Original HN source ↗</text>
+ <text x="36" y="553" font-size="11" fill="#77766d">Product illustration · example entries and counts from a local development snapshot.</text>
+ <text x="36" y="572" font-size="11" fill="#77766d">Recommendations represent individual contributors. Font names use site typography; specimens are not yet available.</text>
+</g>
+</svg>

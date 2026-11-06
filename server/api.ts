@@ -27,6 +27,9 @@ export async function handleApi(request:IncomingMessage,response:ServerResponse)
  const url=new URL(request.url??'/','http://localhost');if(!url.pathname.startsWith('/api/'))return false;
  response.setHeader('Content-Type','application/json; charset=utf-8');response.setHeader('Cache-Control','no-store');response.setHeader('X-Content-Type-Options','nosniff');
  try{
+  const adminPath=url.pathname==='/api/pipeline'||url.pathname.startsWith('/api/pipeline/')||url.pathname==='/api/fonts/pipeline'||url.pathname.startsWith('/api/fonts/pipeline/');
+  const adminEnabled=process.env.PIPELINE_ADMIN_ENABLED==='true'||(process.env.PIPELINE_ADMIN_ENABLED!=='false'&&process.env.NODE_ENV!=='production');
+  if(adminPath&&!adminEnabled){response.writeHead(404).end(JSON.stringify({error:'API endpoint not found'}));return true;}
   if(await fontsApi(request,response))return true;
   if(await pipelineApi(request,response))return true;
   if(request.method!=='GET'){response.writeHead(405,{Allow:'GET'}).end(JSON.stringify({error:'GET only'}));return true;}

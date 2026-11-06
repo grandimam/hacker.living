@@ -9,6 +9,7 @@ With Docker Desktop or Docker Engine + Compose running:
 ```sh
 git clone https://github.com/grandimam/hacker.living.git
 cd hacker.living
+bash scripts/setup-env.sh
 docker compose up --build -d --wait
 ```
 
@@ -31,7 +32,7 @@ Compose builds the frontend, starts PostgreSQL/PostGIS, waits for the database, 
 <details>
 <summary><strong>Credentials and persistence</strong></summary>
 
-Compose uses `POSTGRES_PASSWORD` from `.env` when supplied. Without it, the local development password is `hacker-living-local`. For a new setup, `npm run db:setup` generates random credentials; an existing `.env` is retained. Keep credentials consistent when reusing a database volume.
+Compose requires `POSTGRES_PASSWORD` explicitly; there is no built-in fallback password. `bash scripts/setup-env.sh` generates random local credentials without requiring Node.js. The AWS installer also generates credentials for a fresh setup. Existing `.env` files are retained. Keep credentials consistent when reusing a database volume.
 
 By default, the app and database ports bind to localhost. The optional public profile publishes only Caddy on ports 80/443. The app runs as an unprivileged user. Database files live in the named Docker volume, independently of the containers. Stopping, rebuilding, or recreating containers preserves that volume; removing it deletes the database.
 
@@ -204,3 +205,9 @@ The initial deployment can run the app and PostgreSQL together with Compose. Use
 
 Keep database backups off the instance and test restoring them. Provisioning AWS, configuring DNS/TLS, and transferring your local database are separate deployment steps; cloning this repository does not copy your catalog.
 
+
+## Public hosting boundary
+
+Compose sets `PIPELINE_ADMIN_ENABLED=false`; the app rejects all `/api/pipeline` and `/api/fonts/pipeline` routes before accessing the database. Caddy also blocks those paths at the public proxy. Catalog, Fonts, health, and aggregate metrics remain available. Local Vite development can use the backend controls; they are not public administration APIs. Model credentials are never mounted into the web container.
+
+The setup commands generate a random password. Do not replace it with `.env.example` placeholders.

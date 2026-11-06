@@ -1,4 +1,6 @@
 {$SITE_ADDRESS} {
+	@pipeline path /api/pipeline /api/pipeline/* /api/fonts/pipeline /api/fonts/pipeline/*
+	respond @pipeline 404
 	encode zstd gzip
 	reverse_proxy app:4317
 }
