@@ -1,6 +1,6 @@
 # README animation
 
-`docs/assets/pipeline.gif` is a 15-second, 1200 × 660 looping illustration of the pipeline. Its cards are schematic examples, not quotations or measured processing times. Codex is the active extraction/research runtime; Claude is labeled as an optional classification adapter. The live website serves saved results; the animation does not imply continuous ingestion.
+`docs/assets/pipeline.gif` is a 8-second, 960 × 528 looping illustration of the pipeline. Its cards are schematic examples, not quotations or measured processing times. Codex is the active extraction/research runtime; Claude is labeled as an optional classification adapter. The live website serves saved results; the animation does not imply continuous ingestion.
 
 The still alternative is `docs/assets/pipeline-poster.png`. Both retain source attribution and draft status. The GIF is embedded as a normal repository image, with alt text and a still-image link. GIFs cannot respond to a reduced-motion preference; use the still image for a motion-free view.
 

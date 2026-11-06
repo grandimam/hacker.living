@@ -9,7 +9,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[1] / 'docs/assets'
 OUT.mkdir(parents=True, exist_ok=True)
-W, H, FPS, SECONDS = 1200, 660, 15, 15
+W, H, FPS, SECONDS = 1200, 660, 12, 8
+OUTPUT_SIZE = (960, 528)
+NARRATIVE_SECONDS = 15
 BG = '#f7f5ee'
 INK = '#272820'
 MUTED = '#73756a'
@@ -148,21 +150,22 @@ def draw_frame(t):
 
 frames=[]
 for index in range(FPS*SECONDS):
-    t=index/FPS
+    t=index/FPS * NARRATIVE_SECONDS / SECONDS
     frame=draw_frame(t)
     # Fade to the start for a gentle loop; keep the header still.
     if t>14:
         frame=Image.blend(frame,draw_frame(0),ease(t-14))
-    frames.append(frame)
+    frames.append(frame.resize(OUTPUT_SIZE, Image.Resampling.LANCZOS))
 # A common palette prevents color flicker. Sample the whole narrative.
-samples=[frames[i] for i in [0,45,90,135,180]]
-sheet=Image.new('RGB',(W,H*len(samples)))
-for i,frame in enumerate(samples): sheet.paste(frame,(0,i*H))
+samples=[frames[round(fraction*(len(frames)-1))] for fraction in [0,.2,.4,.6,.8]]
+width,height=OUTPUT_SIZE
+sheet=Image.new('RGB',(width,height*len(samples)))
+for i,frame in enumerate(samples): sheet.paste(frame,(0,i*height))
 palette=sheet.quantize(colors=128,method=Image.Quantize.MEDIANCUT)
 quantized=[f.quantize(palette=palette,dither=Image.Dither.NONE) for f in frames]
-quantized[0].save(OUT/'pipeline.gif',save_all=True,append_images=quantized[1:],duration=[60,70,70]*(len(frames)//3),loop=0,optimize=True,disposal=1)
-frames[180].save(OUT/'pipeline-poster.png',optimize=True)
-preview=Image.new('RGB',(W,3*H))
-for i,j in enumerate([15,100,185]): preview.paste(frames[j],(0,H*i))
+quantized[0].save(OUT/'pipeline.gif',save_all=True,append_images=quantized[1:],duration=[80,80,90]*(len(frames)//3),loop=0,optimize=True,disposal=1)
+frames[round(.8*(len(frames)-1))].save(OUT/'pipeline-poster.png',optimize=True)
+preview=Image.new('RGB',(width,3*height))
+for i,fraction in enumerate([.07,.44,.82]): preview.paste(frames[round(fraction*(len(frames)-1))],(0,height*i))
 preview.save(OUT/'pipeline-preview.png')
 print(f'{len(frames)} frames; {(OUT/"pipeline.gif").stat().st_size / 1024 / 1024:.2f} MiB')

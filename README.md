@@ -9,7 +9,7 @@
 </div>
 
 <a href="https://hacker.living">
-  <img src="./docs/assets/pipeline.gif" alt="Animated pipeline: Hacker News conversations flow to Codex workers for extraction and place research, then through validation into PostgreSQL and a live catalog of places and fonts. Claude is an optional classification adapter. Source credit stays attached; results are draft previews." width="1200" />
+  <img src="./docs/assets/pipeline.gif" alt="Animated pipeline: Hacker News conversations flow to Codex workers for extraction and place research, then through validation into PostgreSQL and a live catalog of places and fonts. Claude is an optional classification adapter. Source credit stays attached; results are draft previews." width="960" height="528" />
 </a>
 
 <p align="center"><sub>Illustrated workflow · <a href="./docs/assets/pipeline-poster.png">View the still image</a> · <a href="./docs/animation.md">Animation source</a></sub></p>
