@@ -1,0 +1,23 @@
+# Copy to hacker-living/.kyt. Add server.identity for your EC2 private-key path,
+# or load the matching key into your SSH agent.
+name = "hacker-living"
+domain = "hacker.living"
+exclude = ["data"]
+
+[server]
+host = "ec2-user@34.204.96.144"
+port = 22
+
+[app]
+port = 4317
+healthcheck = "/api/health"
+
+[compose]
+file = "compose.yaml"
+project = "hacker-living"
+profiles = ["public"]
+generate_env = ["POSTGRES_PASSWORD"]
+arch = "x86_64"
+
+[compose.environment]
+SITE_ADDRESS = "hacker.living"
