@@ -25,6 +25,7 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hacker-living-local}
+      DATABASE_HOST: db
       HOST: 0.0.0.0
       PORT: 4317
     ports:

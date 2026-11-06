@@ -229,6 +229,8 @@ docker compose up --build -d --wait
 
 The installer configures Docker and the optional Caddy HTTPS service. Point DNS at the instance and allow inbound TCP 80/443. It does not transfer your local catalog or start model workers.
 
+**Moving your existing catalog to AWS?** Run `npm run catalog:export`, copy the compressed file, and import it inside the app container. [Processed-data transfer instructions →](./docs/operations.md#move-the-processed-catalog-to-aws)
+
 **[Read the operations guide →](./docs/operations.md)** for development, supported OS versions, credentials, backups, port changes, API routes, and deployment details.
 
 ### Start the pipeline explicitly

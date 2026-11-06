@@ -1,3 +1,4 @@
+import type {Pool,PoolClient} from 'pg';
 import {getPool} from './db/connection.ts';
 import type {ProcessingMetricsData} from '../shared/metrics.ts';
 let cached:Promise<ProcessingMetricsData>|undefined,expires=0;
@@ -5,7 +6,13 @@ let cached:Promise<ProcessingMetricsData>|undefined,expires=0;
 export function processingMetrics():Promise<ProcessingMetricsData>{
  if(cached&&Date.now()<expires)return cached;
  expires=Date.now()+30000;
- cached=getPool().query(`WITH saved AS MATERIALIZED (
+ cached=readProcessingMetrics().catch(error=>{cached=undefined;throw error;});
+ return cached;
+}
+export async function readProcessingMetrics(db:Pool|PoolClient=getPool()):Promise<ProcessingMetricsData>{
+ const snapshot=(await db.query("SELECT cursor FROM pipeline_checkpoints WHERE source='catalog:metrics'")).rows[0]?.cursor;
+ if(snapshot)return snapshot;
+ const result=await db.query(`WITH saved AS MATERIALIZED (
   SELECT DISTINCT candidate_id FROM pipeline_run_candidates
  ), processed AS (
   SELECT candidate_id FROM labels UNION SELECT candidate_id FROM font_labels
@@ -16,6 +23,6 @@ export function processingMetrics():Promise<ProcessingMetricsData>{
  NOT(EXISTS(SELECT 1 FROM pipeline_runs WHERE stage_config @> '{"collect":true}' OR stage_config @> '{"label":true}' OR stage_config @> '{"enrich":true}')
  OR EXISTS(SELECT 1 FROM font_runs WHERE enabled)
  OR EXISTS(SELECT 1 FROM provider_pools WHERE enabled)) AS paused
- `).then(result=>({...result.rows[0],costUsd:419,updatedAt:new Date().toISOString()})).catch(error=>{cached=undefined;throw error;});
- return cached;
+ `);
+ return {...result.rows[0],costUsd:419,updatedAt:new Date().toISOString()};
 }

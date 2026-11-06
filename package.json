@@ -30,7 +30,9 @@
     "pipeline:run": "node --import tsx scripts/date-pipeline.ts",
     "pipeline:tune": "node --import tsx scripts/tune-pipeline.ts",
     "pipeline:fonts": "node --import tsx scripts/fonts-pipeline.ts",
-    "pipeline:pi": "node --import tsx scripts/pi-worker-pool.ts"
+    "pipeline:pi": "node --import tsx scripts/pi-worker-pool.ts",
+    "catalog:export": "node --import tsx scripts/catalog-transfer.ts export",
+    "catalog:import": "node --import tsx scripts/catalog-transfer.ts import"
   },
   "dependencies": {
     "clsx": "^2.1.1",

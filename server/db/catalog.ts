@@ -15,6 +15,7 @@ export function parseStoredCandidate(value:unknown):Candidate{return parseCandid
 const visible=`p.state='published' AND (
  SELECT count(*) FROM (SELECT DISTINCT ON(kind) kind,passed FROM verification_checks v WHERE v.place_id=p.id ORDER BY kind,checked_at DESC,id DESC) latest WHERE passed
 )=4 AND EXISTS(SELECT 1 FROM place_recommendations r JOIN hn_items h ON h.id=r.comment_id WHERE r.place_id=p.id AND h.id=(p.document->'source'->>'commentId')::bigint AND NOT h.dead AND NOT h.deleted AND r.evidence_hash=h.content_hash)`;
+export {visible as publishedVisibility};
 export interface CatalogQuery {q?:string;city?:string;category?:string;limit:number;offset:number;bounds?:[number,number,number,number];near?:[number,number,number];ids?:string[];id?:string;sort?:string}
 export async function listPlaces(query:CatalogQuery,pool:Pool=getPool()){
  const values:unknown[]=[],conditions=[visible];

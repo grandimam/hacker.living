@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Pool} from 'pg';
 import {randomBytes} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
+import {readFile,readdir} from 'node:fs/promises';
 import {getPool,transaction,closeDatabase} from '../server/db/connection.ts';
 import {researchCandidates} from '../server/pipeline/enrich.ts';
 import {prioritizeRun} from '../server/pipeline/prioritize.ts';
@@ -11,6 +11,8 @@ import {parseFontLabels} from '../server/fonts/core.ts';
 import {workflowVersion} from '../server/pipeline/runs.ts';
 import {changeStage} from '../server/pipeline/control.ts';
 import {createRun,runCounts,resetIncompleteRun} from '../server/pipeline/runs.ts';
+import {exportProcessedCatalog,importProcessedCatalog} from '../server/db/catalog-transfer.ts';
+import {readProcessingMetrics} from '../server/metrics.ts';
 import {listDiscovery} from '../server/db/discovery.ts';
 import {saveCandidate} from '../server/db/catalog.ts';
 import {listPlaces,persistVerifiedDraft} from '../server/db/catalog.ts';
@@ -157,6 +159,34 @@ test('PostGIS publication, query isolation, and durable leased jobs',{skip:!enab
   assert.equal((await pool.query('SELECT state FROM candidates WHERE id=$1',[fontCandidate.id])).rows[0].state,'pending','font recommendations cannot change Places decisions');
   await assert.rejects(saveFontLabel(fontJob,fontLabel,inputHash,{model:'other-test',usage:null},pool),/lease lost/);
   assert.equal((await pool.query('SELECT count(*)::int AS total FROM font_labels')).rows[0].total,1,'stale font workers roll back their output');
+  await pool.query('UPDATE hn_items SET deleted=false WHERE id=900003');
+  await pool.query("UPDATE proposal_research SET location=ST_SetSRID(ST_MakePoint(5,10),4326)::geography,coordinate_source='https://example.com/coordinates' WHERE proposal_id=$1",[proposal]);
+  await publish('transfer-visible',900020,20);
+  const exported=await exportProcessedCatalog(pool);
+  assert.ok(exported.tables.font_recommendations.length>0);
+  assert.ok(exported.tables.place_proposals.length>0);
+  assert.ok(!('pipeline_jobs' in exported.tables));
+  assert.ok(exported.tables.hn_items.every(r=>r.archive_partition_id===null));
+  const targetSchema=`transfer_${randomBytes(8).toString('hex')}`;
+  await admin.query(`CREATE SCHEMA ${targetSchema}`);
+  const target=new Pool({connectionString:process.env.DATABASE_URL,options:`-c search_path=${targetSchema},public`,max:4});
+  try{
+   for(const name of (await readdir(new URL('../server/db/migrations/',import.meta.url))).filter(n=>n.endsWith('.sql')).sort())await target.query(await readFile(new URL(`../server/db/migrations/${name}`,import.meta.url),'utf8'));
+   const broken=structuredClone(exported);broken.tables.verification_checks=[];
+   if(broken.tables.places.some(p=>p.state==='published')){
+    await assert.rejects(importProcessedCatalog(broken,target),/verification/);
+    assert.equal((await target.query('SELECT count(*)::int AS n FROM hn_items')).rows[0].n,0,'failed import rolls back all rows');
+   }
+   await importProcessedCatalog(exported,target);
+   assert.deepEqual((await listDiscovery({limit:100,offset:0},target)).places,(await listDiscovery({limit:100,offset:0},pool)).places,'research previews and coordinates survive transfer');
+   assert.deepEqual((await listDiscovery({limit:100,offset:0},target)).unlocated,(await listDiscovery({limit:100,offset:0},pool)).unlocated);
+   assert.deepEqual((await listFonts(100,0,target)).fonts,(await listFonts(100,0,pool)).fonts,'font context and evidence survive transfer');
+   assert.equal((await listPlaces({limit:100,offset:0},target)).total,(await listPlaces({limit:100,offset:0},pool)).total,'approved catalog gates survive transfer');
+   assert.equal((await target.query('SELECT count(*)::int AS n FROM pipeline_jobs')).rows[0].n,0);
+   assert.equal((await target.query('SELECT count(*)::int AS n FROM pipeline_runs')).rows[0].n,0);
+   const copiedMetrics=await readProcessingMetrics(target);assert.equal(copiedMetrics.collected,exported.metrics.collected);assert.equal(copiedMetrics.paused,true);assert.equal(copiedMetrics.processing,0);
+   await assert.rejects(importProcessedCatalog(exported,target),/empty database/);
+  }finally{await target.end();await admin.query(`DROP SCHEMA ${targetSchema} CASCADE`);}
   await pool.query('UPDATE hn_items SET deleted=true WHERE id=900010');assert.equal((await listFonts(100,0,pool)).total,0);
  }finally{await pool.end();await admin.query(`DROP SCHEMA ${schema} CASCADE`);await closeDatabase();}
 });

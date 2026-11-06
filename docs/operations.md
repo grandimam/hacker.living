@@ -37,6 +37,41 @@ By default, the app and database ports bind to localhost. The optional public pr
 
 </details>
 
+## Move the processed catalog to AWS
+
+This transfers the catalog and its supporting HN evidence, not the raw archive, unrelated comments, or processing queues. It retains draft status, source counts, coordinates, official-link research, font recommendations, verification checks, and a dated metrics snapshot. Local image/font files outside the repository must be transferred separately; external asset URLs remain links.
+
+**1. Export on your local machine** (the local PostgreSQL service must be running):
+
+```sh
+npm run catalog:export
+```
+
+The output is `data/exports/catalog.json.gz`, with file permissions restricted to its owner. The command prints row counts and the compressed size. It reads a consistent database snapshot without changing the source database.
+
+**2. Copy the file to AWS** (replace the key, user, and hostname):
+
+```sh
+scp -i /path/to/key.pem data/exports/catalog.json.gz ubuntu@YOUR_SERVER:~/catalog.json.gz
+```
+
+Use `ec2-user` for Amazon Linux, or your configured SSH user.
+
+**3. On AWS, build/start the current code and import:**
+
+```sh
+cd hacker.living
+docker compose up --build -d --wait
+docker compose exec -T app npm run catalog:import -- --file - < ~/catalog.json.gz
+docker compose restart app
+```
+
+The server does not need Node.js or npm installed; the import runs inside the app container. The importer requires an **empty database** and refuses to overwrite an existing catalog or processing system. Validation and inserts run transactionally; a failed import rolls back. For future replacements of a live catalog, plan a separate staged update rather than deleting the production volume.
+
+Publication gates still run. Previously published records whose current evidence no longer passes are imported as review records, keeping them out of the approved API. Research previews stay drafts. No model processing is started. Metrics retain the export's collection/processing totals and report zero current processing; they are a snapshot of local work, not live production worker activity.
+
+This is separate from `npm run db:backup`, which backs up the entire processing database, and `npm run db:export`, which exports only approved places as JSON.
+
 ## Development
 
 Use **Node.js 22.12+** and Docker for frontend/backend development:
