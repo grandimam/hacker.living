@@ -21,3 +21,34 @@ arch = "x86_64"
 
 [compose.environment]
 SITE_ADDRESS = "hacker.living"
+
+# Workspace inspection (does not change deployment or expose database ports).
+
+[[apis]]
+name = "Health"
+path = "/api/health"
+
+[[apis]]
+name = "Processing metrics"
+path = "/api/metrics"
+
+[[apis]]
+name = "Discoveries"
+path = "/api/discoveries?limit=20"
+
+[[apis]]
+name = "Recommendations"
+path = "/api/recommendations?limit=20"
+
+[[apis]]
+name = "Places"
+path = "/api/places?limit=20"
+
+[[apis]]
+name = "Fonts"
+path = "/api/fonts?limit=20"
+
+[database]
+service = "db"
+name = "hacker_living"
+user = "hacker_living"
