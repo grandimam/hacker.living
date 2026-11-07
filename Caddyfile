@@ -2,5 +2,18 @@
 	@pipeline path /api/pipeline /api/pipeline/* /api/fonts/pipeline /api/fonts/pipeline/*
 	respond @pipeline 404
 	encode zstd gzip
+	handle_path /_jove/* {
+		route {
+			request_body {
+				max_size 128KB
+			}
+			@collect {
+				path /script.js /api/send /api/batch
+				method GET POST OPTIONS
+			}
+			reverse_proxy @collect jove-analytics-b3ac73519266e09a:3000
+			respond 404
+		}
+	}
 	reverse_proxy app:4317
 }
