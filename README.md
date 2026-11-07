@@ -2,7 +2,9 @@
 
 <h1><img src="./docs/assets/hacker-living.svg" alt="hacker.living" width="460" /></h1>
 
-**Coding agents turning conversations into discoveries.**
+### Places worth visiting. Typefaces worth trying.
+
+Discover recommendations from people on Hacker News,<br />with the context and original conversations behind them.
 
 [Explore the live site ↗](https://hacker.living) · [Inside the pipeline](#inside-the-pipeline) · [Run it yourself](#run-it)
 
@@ -16,14 +18,14 @@
 
 A place you would never have searched for. A typeface someone swears by. **Explore recommendations from Hacker News, with the people and conversations behind them.**
 
-Built with Claude and Codex. The pipeline also uses coding-agent runtimes as data workers: extract a recommendation, research a place, save the evidence, and make the result available on the site.
-
 <p align="center">
   <b>2.06M</b> comments collected &nbsp; / &nbsp; <b>38.9K</b> analyzed &nbsp; / &nbsp; <b>2</b> collections
   <br /><sub>Development snapshot. Places and Fonts are research previews; processing runs explicitly.</sub>
 </p>
 
 ## Inside the pipeline
+
+Built with Claude and Codex. The pipeline also uses coding-agent runtimes as data workers: extract a recommendation, research a place, save the evidence, and make the result available on the site.
 
 **Collect once. Research incrementally. Resume from saved work.**
 
