@@ -2,6 +2,7 @@ import type {IncomingMessage,ServerResponse} from 'node:http';
 import {pipelineApi} from './pipeline/http-api.ts';
 import {processingMetrics} from './metrics.ts';
 import {fontsApi} from './fonts/api.ts';
+import {websitesApi} from './websites/api.ts';
 import type {Plugin} from 'vite';
 import {getPool,closeDatabase} from './db/connection.ts';
 import {listPlaces,type CatalogQuery} from './db/catalog.ts';
@@ -27,10 +28,11 @@ export async function handleApi(request:IncomingMessage,response:ServerResponse)
  const url=new URL(request.url??'/','http://localhost');if(!url.pathname.startsWith('/api/'))return false;
  response.setHeader('Content-Type','application/json; charset=utf-8');response.setHeader('Cache-Control','no-store');response.setHeader('X-Content-Type-Options','nosniff');
  try{
-  const adminPath=url.pathname==='/api/pipeline'||url.pathname.startsWith('/api/pipeline/')||url.pathname==='/api/fonts/pipeline'||url.pathname.startsWith('/api/fonts/pipeline/');
+  const adminPath=url.pathname==='/api/pipeline'||url.pathname.startsWith('/api/pipeline/')||url.pathname==='/api/fonts/pipeline'||url.pathname.startsWith('/api/fonts/pipeline/')||url.pathname.startsWith('/api/websites/pipeline/');
   const adminEnabled=process.env.PIPELINE_ADMIN_ENABLED==='true'||(process.env.PIPELINE_ADMIN_ENABLED!=='false'&&process.env.NODE_ENV!=='production');
   if(adminPath&&!adminEnabled){response.writeHead(404).end(JSON.stringify({error:'API endpoint not found'}));return true;}
   if(await fontsApi(request,response))return true;
+  if(await websitesApi(request,response))return true;
   if(await pipelineApi(request,response))return true;
   if(request.method!=='GET'){response.writeHead(405,{Allow:'GET'}).end(JSON.stringify({error:'GET only'}));return true;}
   if(url.pathname==='/api/health'){await getPool().query('SELECT 1');response.end(JSON.stringify({ok:true,database:'postgresql',catalog:'database'}));}

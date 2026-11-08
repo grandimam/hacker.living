@@ -18,7 +18,7 @@ test('production and explicitly disabled admin routes return 404 before database
   for(const explicit of [undefined,'false']){
    process.env.NODE_ENV='production';
    if(explicit===undefined)delete process.env.PIPELINE_ADMIN_ENABLED;else process.env.PIPELINE_ADMIN_ENABLED=explicit;
-   for(const path of ['/api/pipeline/runs','/api/pipeline/provider-pools','/api/pipeline/preview','/api/fonts/pipeline/runs']){
+   for(const path of ['/api/pipeline/runs','/api/pipeline/provider-pools','/api/pipeline/preview','/api/fonts/pipeline/runs','/api/websites/pipeline/runs','/api/websites/pipeline/runs/11111111-1111-1111-1111-111111111111/control']){
     for(const method of ['GET','POST']){
      const response:Response=await fetch(`http://127.0.0.1:${address.port}${path}`,{method,headers:{Host:'localhost',Origin:'http://localhost'}});
      assert.equal(response.status,404,`${method} ${path}`);

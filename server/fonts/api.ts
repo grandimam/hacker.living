@@ -19,7 +19,9 @@ export async function fontsApi(request:IncomingMessage,response:ServerResponse){
    if(!Number.isInteger(limit)||limit<1||limit>200||!Number.isInteger(offset)||offset<0||offset>1000000){response.writeHead(400).end(JSON.stringify({error:'Invalid font pagination'}));return true;}
    const context=url.searchParams.get('context')??undefined;
    if(context&&!fontContexts.includes(context as typeof fontContexts[number])){response.writeHead(400).end(JSON.stringify({error:'Invalid font context'}));return true;}
-   response.end(JSON.stringify(await listFonts(limit,offset,getPool(),context)));
+   const sort=url.searchParams.get('sort')??'name';
+   if(!['name','recent'].includes(sort)){response.writeHead(400).end(JSON.stringify({error:'Invalid font sort'}));return true;}
+   response.end(JSON.stringify(await listFonts(limit,offset,getPool(),context,sort as 'name'|'recent')));
   }else{const runs=(await getPool().query('SELECT id FROM font_runs ORDER BY created_at DESC LIMIT 20')).rows;response.end(JSON.stringify({runs:await Promise.all(runs.map(run=>fontProgress(run.id)))}));}
   return true;
  }

@@ -3,7 +3,7 @@ import { build } from 'vite';
 // Catalog data comes from PostgreSQL at runtime, never from the build context.
 await build();
 const html = await readFile('dist/index.html', 'utf8');
-const routes=['places','saved','about','credits','pipeline','pipeline/fonts','fonts'];
+const routes=['places','saved','about','credits','pipeline','pipeline/fonts','fonts','websites','pipeline/websites'];
 for(const path of routes){
  await mkdir(`dist/${path}`,{recursive:true});
  await writeFile(`dist/${path}/index.html`,html);

@@ -19,7 +19,7 @@ export function AppProvider({children}:{children:ReactNode}){
  const savedKey=pathname==='/saved'?[...saved].sort().join(','):'';
  useEffect(()=>{
   const version=++generation.current,abort=new AbortController();
-  if(pathname==='/about'||pathname.startsWith('/fonts')||pathname.startsWith('/pipeline'))return()=>abort.abort();
+  if(pathname==='/'||pathname==='/about'||pathname.startsWith('/websites')||pathname.startsWith('/fonts')||pathname.startsWith('/pipeline'))return()=>abort.abort();
   setRefreshing(true);setError(null);
   const input=new URLSearchParams(search),query=new URLSearchParams({limit:'100'});
   for(const key of ['q','city','category','bounds','lat','lon','radiusKm','sort'])if(input.has(key))query.set(key,input.get(key)!);

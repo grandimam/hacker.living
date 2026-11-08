@@ -218,6 +218,21 @@ Authors, dates, exact source URLs, research sources, and link-check dates stay w
 
 ## Run it
 
+### Websites: visually beautiful web design
+
+The Websites collection uses the same saved HN comments in a separate, resumable queue. Code scans the snapshot for explicit public website links. Codex judges whether the comment explicitly praises the linked website’s visual appearance, and returns structured JSON with a visual-design judgment, collection fit, confidence, reason, and a required exact evidence quote for every included result. Writing quality, useful content, interesting articles, generic creativity, and citations do not qualify. A blog qualifies only when its appearance is praised. These are HN members’ aesthetic judgments, not our own visual assessments. All linked comments remain queued; editorial signals affect priority, not inclusion.
+
+No destination websites are fetched. URLs must be present in the original comment; results remain unverified drafts with authors, dates, comment links, and discussion links. Different extraction versions keep separate jobs and labels, so the earlier broad Websites pass is retained in history but excluded from the current collection.
+
+```sh
+npm run db:migrate
+npm run pipeline:websites -- run --source-run <saved-places-run-id> --workers 2 --background
+npm run pipeline:websites -- status --run <website-run-id>
+npm run pipeline:websites -- pause --run <website-run-id>
+```
+
+The local homepage is `/`, the collection is `/websites`, and `/pipeline/websites` shows live progress, saved model JSON, failures, and pause/resume controls. Pipeline endpoints are disabled in production by default. Loading a page never starts extraction. Run commands require the existing authenticated Codex app server; model inference is remote while workers and PostgreSQL run locally.
+
 ```sh
 git clone https://github.com/grandimam/hacker.living.git
 cd hacker.living

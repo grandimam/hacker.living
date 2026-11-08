@@ -1,7 +1,7 @@
 import type {Pool,PoolClient} from 'pg';
 import {getPool,transaction} from './connection.ts';
 import {limitedProvider} from '../pipeline/model-backpressure.ts';
-export type JobKind='extract_month'|'label_comment'|'resolve_place'|'verify_place'|'publish_place'|'label_font';
+export type JobKind='extract_month'|'label_comment'|'resolve_place'|'verify_place'|'publish_place'|'label_font'|'label_website';
 export interface Job {id:string;kind:JobKind;payload:Record<string,unknown>;lease_token:string;attempts:number;max_attempts:number}
 export async function enqueueJob(kind:JobKind,key:string,payload:unknown,client:Pick<PoolClient,'query'>=getPool()){
  const result=await client.query<{id:string}>('INSERT INTO pipeline_jobs(kind,dedupe_key,payload) VALUES($1,$2,$3) ON CONFLICT(kind,dedupe_key) DO UPDATE SET dedupe_key=excluded.dedupe_key RETURNING id',[kind,key,JSON.stringify(payload)]);return result.rows[0].id;

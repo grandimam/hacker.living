@@ -3,9 +3,9 @@ import {getPool,transaction} from '../db/connection.ts';
 import type {Job} from '../db/jobs.ts';
 
 /** Reserve an entire scoped batch in one transaction; competing workers skip its locks. */
-export async function claimLabelBatch(runId:string,kind:'label_comment'|'label_font',version:string,worker:string,limit=15,coverage=false,pool:Pool=getPool()):Promise<Job[]>{
+export async function claimLabelBatch(runId:string,kind:'label_comment'|'label_font'|'label_website',version:string,worker:string,limit=15,coverage=false,pool:Pool=getPool()):Promise<Job[]>{
  if(!Number.isInteger(limit)||limit<1||limit>50)throw Error('Invalid label batch size');
- const scope=kind==='label_font'?'JOIN font_run_candidates rc ON rc.job_id=j.id':"JOIN pipeline_run_candidates rc ON rc.candidate_id=j.payload->>'candidateId'";
+ const scope=kind==='label_website'?'JOIN website_run_candidates rc ON rc.job_id=j.id':kind==='label_font'?'JOIN font_run_candidates rc ON rc.job_id=j.id':"JOIN pipeline_run_candidates rc ON rc.candidate_id=j.payload->>'candidateId'";
  return transaction(async c=>{
   await c.query(`UPDATE pipeline_jobs j SET state='failed',worker_id=NULL,lease_token=NULL,locked_until=NULL,last_error='Worker lease expired after final attempt',updated_at=now()
    WHERE j.kind=$2 AND j.state='running' AND j.locked_until<now() AND j.attempts>=j.max_attempts AND EXISTS(SELECT 1 FROM pipeline_jobs s ${scope.replaceAll('j.','s.')} WHERE s.id=j.id AND rc.run_id=$1)`,[runId,kind]);
